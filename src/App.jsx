@@ -18,7 +18,7 @@ function App() {
   }, []);
 
   return (
-    <div id="background" className="h-screen flex justify-center items-center">
+    <div id="background" className="h-screen flex justify-center items-center overflow-y-auto">
       <div className="w-full h-full text-center flex flex-col justify-center items-center ">
        
       <div className={`transition-opacity duration-4000 text-[70px] md:text-[100px] text-white text-bold ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
