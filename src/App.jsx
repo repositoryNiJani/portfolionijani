@@ -34,7 +34,7 @@ function App() {
          
       </div>
 
-    <div className="absolute bottom-0 top-210 md:top-200 left-0 w-full h-[300px] flex justify-center items-center">
+    <div className="absolute bottom-0 top-210 md:top-190 left-0 w-full h-[300px] flex justify-center items-center">
       <img className={`w-[300px] hover:translate-y-[-40px] hover: transition-all duration-700 ease-out 
       hover:shadow-[0_0_100px_rgba(0,72,85)]
         ${isDown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} src="/back.png" alt="card" />
