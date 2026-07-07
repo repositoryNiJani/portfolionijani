@@ -16,9 +16,9 @@
 }
 
 
-html,
-body {
-  min-height: 100%;
+html, body {
+  overflow-y: auto;
+  height: 100%;
 }
 
 body {
@@ -35,7 +35,9 @@ h1 {
 }
 
 #background {
-  position: relative;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   overflow: hidden;
 }
 
@@ -47,8 +49,6 @@ h1 {
   background-size: 80%, cover;
   background-repeat: no-repeat, no-repeat;
   background-position: center, center;
-   /* opacity: 0.4; */
   filter: blur(5px);
   transform: scale(1.05);
-  z-index: -1;
 }
