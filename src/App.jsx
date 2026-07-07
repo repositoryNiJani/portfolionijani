@@ -47,9 +47,7 @@ function App() {
   
 
   return (
-    <div className="relative min-h-screen overflow-hidden flex justify-center items-center
-     opacity-100 max-h-[70vh] 
-     pointer-events-auto' : 'bottom-0 top-[80%] md:top-[74%]">
+    <div  className="min-h-screen flex justify-center items-center overflow-y-auto">
       <div className="w-full h-full text-center flex flex-col justify-center items-center ">
        
     
@@ -90,21 +88,47 @@ function App() {
           </div>
     </div> */}
 
-
-    <div className={`absolute inset-x-0 flex justify-center transition-all duration-1000 ease-out ${isClicked ? 'top-[42%] md:top-[38%]' : 'bottom-0 top-[80%] md:top-[74%]'}`}>
-      <div className={`grid gap-4 md:gap-6 transition-all mb-6 duration-1000 ease-out ${isClicked ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1'}`}>
-        {cards.map((card, index) => (
-          <img
-            key={card.id}
-            onClick={handleImageClick}
-            src={card.image}
-            alt={card.title}
-            className={`w-[250px] md:w-[250px] transition-all duration-1000 ease-out hover:-translate-y-8 hover:shadow-[0_0_100px_rgba(0,72,85)] ${isDown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} ${isClicked ? 'translate-y-0 scale-100' : 'translate-y-8'}`}
-            style={{ transitionDelay: `${index * 100}ms` }}
-          />
-        ))}
-      </div>
+   <div className='min-h-screen flex justify-center items-center'>
+     <div className={`absolute inset-x-10 md:inset-x-50 transition-all duration-700 top-70
+        ${isClicked ? 'opacity-100 translate-y-0'  : 'opacity-0 translate-y-20 pointer-events-none'}`}>
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+           <div>
+            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
+            transition-all duration-700 ease-in-out' />
+            {/* <p>ABOUT ME</p> */}
+           </div>
+            <div>
+            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
+            transition-all duration-700 ease-in-out' />
+           </div>
+            <div>
+            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
+            transition-all duration-700 ease-in-out' />
+           </div>
+            <div>
+            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
+            transition-all duration-700 ease-in-out' />
+           </div>
+         
+          </div>
     </div>
+   </div>
+
+    <div className="absolute bottom-0 top-210 md:top-190 left-0 w-full h-[300px] flex justify-center items-center">
+      <img 
+       onClick={handleImageClick}
+      className={`w-[300px] hover:translate-y-[-40px] hover: transition-all duration-1000 ease-out 
+      hover:shadow-[0_0_100px_rgba(0,72,85)]
+        ${isDown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
+        ${isClicked ? 'translate-y-[1000px]' : ''}
+        `} src="/back.png" alt="card" />
+    </div>
+
+    
 
     </div>
   );
