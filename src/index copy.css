@@ -1,0 +1,54 @@
+﻿@import "tailwindcss";
+/* @import url("https://fonts.googleapis.com/css2?family=Anton&display=swap"); */
+
+
+/* body {
+  font-family: "Anton", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+} */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+html, body {
+  overflow-y: auto;
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #000;
+  color: #fff;
+}
+
+h1 {
+   font-family: "Inter", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  line-height: 1;
+}
+
+#background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+#background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('/bg.png'), linear-gradient(rgba(0, 72, 85, 0.8), rgb(0, 0, 0));
+  background-size: 80%, cover;
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center;
+  filter: blur(5px);
+  transform: scale(1.05);
+}
