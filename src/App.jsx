@@ -42,11 +42,22 @@ function App() {
     { id: 4, image: '/back.png', title: 'Card 4', description: 'This is card 4' },
   ];
 
+  //when click will go back at the top
+  const scrollToElement = () => {
+  const element = document.getElementById('hero');
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+};
+
   return (
     <div className="min-h-screen text-white">
       {/* hero section */}
-      <div className="relative w-full h-[100vh] flex flex-col items-center justify-center">
-        <div className={`w-[70px] h-[70px] md:w-[100px] md:h-[100px] transition-all duration-1000 z-10
+      <div id="hero" className="relative w-full h-[100vh] flex flex-col items-center justify-center">
+        <div className={`w-[70px] h-[70px] md:w-[100px] md:h-[100px] transition-all duration-1000 z-20
           ${isVisible ? 'opacity-100' : 'opacity-0'} 
           ${isClicked ? 'translate-y-[-270px] scale-80' : ''}
          `}
@@ -54,7 +65,7 @@ function App() {
           onMouseLeave={handleMouseLeave}>
           <img 
             className={`transition-all duration-1000 
-              
+              cursor-pointer
                ${isHovered ? 'scale-150 rotate-360' : 'scale-100 rotate-0'}`}
             onClick={() => setIsClicked(!isClicked)}
             src="/logo.png" alt="Logo" />
@@ -73,7 +84,7 @@ function App() {
             onClick={handleImageClick}
             src="/back.png" 
             alt="back" 
-            className={`transition-all duration-1000 
+            className={`transition-all duration-1000 cursor-pointer
               hover:translate-y-[-50px] hover:drop-shadow-[0_0_20px_rgba(0,72,85)]
               ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
               ${isClicked ? 'translate-y-[200px]' : ''}`} 
@@ -82,16 +93,32 @@ function App() {
       </div>
 
       {/* about me */}
-      <div className="relative w-full h-[100vh] flex flex-col items-center justify-center bg-white transition-all duration-1000 z-20">
+      <div className="relative w-full h-[100vh] gap-10 flex flex-col items-center justify-center bg-white transition-all duration-1000 z-20">
+       
        <div>
         <h1 className="text-[50px] md:text-[80px] font-bold text-[#004855]">About me.</h1>
         <p className="text-base md:text-xl text-black">go back pls. - jani</p>
        </div>
 
       {/* 404  */}
-      <div className="w-300">
-        <img src="/404c.png" alt="404" />
+      <div className="w-100 md:w-150">
+        <img 
+        onClick={scrollToElement}
+        src="/404.png" alt="404" />
       </div>
+
+    <div className={`fixed bottom-8 right-8 w-[70px] h-[70px] md:w-[100px] md:h-[100px] transition-all duration-1000 z-50 flex flex-col items-center p-4 shadow-lg`}
+  onMouseEnter={handleMouseEnter}
+  onMouseLeave={handleMouseLeave}>
+  <p className='text-[#004855] text-xs mb-1'>Go up</p>
+  <img 
+    className={`transition-all duration-1000 cursor-pointer
+      ${isHovered ? 'scale-150 rotate-[360deg]' : 'scale-100 rotate-0'}`}
+    onClick={scrollToElement}
+    src="/logo.png" 
+    alt="Go to top" 
+  />
+</div>
 
       </div>
 
