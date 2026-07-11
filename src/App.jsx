@@ -37,7 +37,7 @@ function App() {
   return (
     <div className="min-h-screen text-white">
       {/* Hero section */}
-      <div id="hero" className={`relative w-full ${isClicked ? 'h-[110vh]' : ''} h-[100vh] md:h-[100vh] flex flex-col items-center justify-center`}>
+      <div id="hero" className={`relative w-full ${isClicked ? 'h-[130vh]' : ''} h-[100vh] md:h-[100vh] flex flex-col items-center justify-center`}>
         
         {/* Logo */}
         <div 
