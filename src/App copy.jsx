@@ -52,7 +52,7 @@ function App() {
        
     
        <div className={`transition-all text-[70px] md:text-[100px] text-white text-bold z-100`}>
-        <img src="/logo.svg"  alt="logo" className={`transition-all duration-2000 ease-in-out
+        <img src="/logo.png"  alt="logo" className={`transition-all duration-2000 ease-in-out
         hover:-rotate-180 hover:scale-120 
         hover:drop-shadow-[0_0_20px_rgba(0,72,85)]
        w-[80px] h-[80px] md:w-[100px] md:h-[100px] 

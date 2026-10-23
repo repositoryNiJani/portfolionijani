@@ -72,7 +72,7 @@ track.style.transform='translate3d('+(-off)+'px,0,0)';
 };
 window.addEventListener('scroll',car,{passive:true});window.addEventListener('resize',car);car();
 }
-var deck=document.getElementById('fdeck'),cs=[].slice.call(deck.querySelectorAll('.fcard')),order=cs.map(function(_,i){return i}),sel=null;
+var deck=document.getElementById('fdeck'),cs=[].slice.call(deck.querySelectorAll('.fcard')),order=cs.map(function(_,i){return i}),sel=0;
 var panel=document.getElementById('panel'),ph=document.getElementById('ph'),pc=document.getElementById('pc'),prn=document.getElementById('prn'),pt=document.getElementById('pt'),pd=document.getElementById('pd'),pl=document.getElementById('pl');
 function place(){order.forEach(function(ci,p){var c=cs[ci];c.style.setProperty('--p',p);c.style.zIndex=10-p;c.tabIndex=p===0?0:-1})}
 function show(){
@@ -193,7 +193,7 @@ if(save&&currentTheme!==t)flipDeveloperCard();
 if(save){try{localStorage.setItem('jani-theme',t)}catch(e){}}
 }
 tb.forEach(function(b){b.addEventListener('click',function(){theme(b.dataset.t,true)})});
-theme(document.documentElement.getAttribute('data-theme')||'blue',false);
+theme(document.documentElement.getAttribute('data-theme')||'light',false);
 var projectModal=document.getElementById('project-modal'),projectTitle=document.getElementById('project-modal-title'),projectMeta=document.getElementById('project-modal-meta'),projectDetails=document.getElementById('project-modal-details'),projectTags=document.getElementById('project-modal-tags');
 document.getElementById('project-modal-close').setAttribute('autofocus','');
 function openProject(article){

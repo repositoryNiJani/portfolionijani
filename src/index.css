@@ -229,7 +229,7 @@ section>.wrap>h2{font-size:clamp(1.8rem,4vw,2.8rem);text-align:center;margin-bot
 .sc h3{font-size:1.15rem;font-weight:700;margin-bottom:6px}
 .sc p{margin:0;font-size:1rem;line-height:1.5}
 .sc .when{display:block;font-size:.9rem;font-weight:600;margin-top:4px;opacity:.8}
-.pair{grid-template-columns:repeat(2,1fr);max-width:780px;margin:0 auto}
+.pair{grid-template-columns:repeat(3,1fr);max-width:1500px;margin:0 auto}
 .edu{padding:24px 22px}
 .edu[role="button"]{cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
 .edu[role="button"]:hover{transform:translateY(-4px);box-shadow:0 0 36px rgba(var(--glowrgb),.34)}
