@@ -112,8 +112,12 @@ section>.wrap>h2{font-size:clamp(1.8rem,4vw,2.8rem);text-align:center;margin-bot
 .c3{--ff:var(--c3bg);color:var(--c3fg)}
 
 .about{display:grid;grid-template-columns:260px 1fr;gap:52px;align-items:center;max-width:920px;margin:0 auto}
-.ab-card{aspect-ratio:3/5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 20px}
-.ab-card .mini{width:120px;height:120px;margin:0}
+.ab-card{aspect-ratio:3/5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 20px;perspective:900px;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease}
+.ab-card:hover{transform:perspective(900px) rotateX(3deg) rotateY(-4deg) translateY(-3px)}
+.ab-card .mini{width:120px;height:120px;margin:0;transition:filter .35s ease,transform .35s ease}
+:root[data-theme="light"] .ab-card .mini{filter:drop-shadow(0 0 12px rgba(var(--glowrgb),.55)) saturate(.72)}
+.ab-card.theme-flip{animation:developer-card-flip .7s ease both}
+@keyframes developer-card-flip{0%{transform:perspective(900px) rotateY(0deg)}45%{transform:perspective(900px) rotateY(180deg)}100%{transform:perspective(900px) rotateY(360deg)}}
 .about p{margin:0 0 16px;max-width:62ch}
 .about dl{margin:26px 0 0;display:grid;gap:14px}
 .about dl div{border-left:3px solid var(--teal);padding-left:14px}
@@ -265,3 +269,58 @@ footer{padding:28px 0 44px;color:var(--muted);font-size:.88rem;text-align:center
 .project-modal-info h2{font-size:1.6rem}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+body[data-view="gateway"],body[data-view="resume"]{height:100dvh;overflow:hidden}
+#portfolio-view{transition:opacity .45s ease}
+body:not([data-view="portfolio"]) #portfolio-view{visibility:hidden;opacity:0;pointer-events:none}
+.entry-flow{position:fixed;inset:0;z-index:100;display:grid;place-items:center;overflow:auto;padding:clamp(20px,5vw,72px);background:radial-gradient(ellipse at 50% 0%,#d4f2f4,#f4fafb 58%,#e3eff1);color:#102f35;opacity:1;transition:opacity .4s ease}
+.entry-flow[hidden]{display:none}
+.entry-flow.leaving{opacity:0;pointer-events:none}
+.entry-flow>section{width:min(860px,100%);padding:0;border:0}
+.entry-choices{text-align:center;animation:choices-in .65s ease both}
+.entry-eyebrow{margin:0 0 8px;color:#168697;font-size:.85rem;font-weight:800;letter-spacing:.2em}
+.entry-choices h1{margin:0 auto 36px;font-size:clamp(2rem,5vw,3.4rem);color:#0d4a55}
+.entry-options{display:flex;justify-content:center;gap:clamp(14px,5vw,48px)}
+.entry-option{position:relative;isolation:isolate;width:clamp(124px,23vw,205px);aspect-ratio:3/5;flex:none;padding:0;overflow:hidden;border:clamp(4px,.7vw,7px) solid #06343d;border-radius:12px;background:linear-gradient(180deg,#cfe6ea 0%,#8cc3cd 45%,#2a9db0 100%);color:#06343d;box-shadow:0 0 34px rgba(14,127,144,.3);cursor:pointer;filter:drop-shadow(0 0 12px rgba(14,127,144,.18));transition:transform .35s cubic-bezier(.2,.8,.2,1),filter .3s ease}
+.entry-option::before{position:absolute;z-index:1;inset:4%;border:1.5px solid #2a9db0;border-radius:6px;content:""}
+.entry-option::after{position:absolute;z-index:0;top:7%;left:10%;width:80%;aspect-ratio:1;border:1.5px solid rgba(255,255,255,.58);border-radius:50%;content:""}
+.entry-option:hover,.entry-option:focus-visible{transform:translateY(-10px) scale(1.035);filter:drop-shadow(0 0 20px rgba(14,127,144,.46))}
+.entry-option:active{transform:translateY(-3px) scale(.98)}
+.entry-card-face{position:absolute;z-index:2;inset:0;display:grid;align-content:center;justify-items:center;gap:clamp(8px,1.5vw,14px);padding:16px;color:#fff;text-shadow:0 1px 4px rgba(6,52,61,.5)}
+.entry-card-number{position:absolute;top:9%;font:700 clamp(.9rem,2vw,1.2rem)/1 "Fredoka",sans-serif;letter-spacing:.18em}
+.entry-card-emblem{display:block;width:38%;aspect-ratio:1;color:#fff;filter:drop-shadow(0 0 12px rgba(255,255,255,.45))}
+.entry-card-emblem svg{display:block;width:100%;height:100%}
+.entry-card-face strong{font:900 clamp(1.25rem,3vw,1.8rem)/1.1 "Fredoka",sans-serif}
+.entry-card-face small{font:600 clamp(.72rem,1.8vw,.95rem)/1.35 "Nunito",sans-serif}
+.entry-option-action{position:absolute;right:0;bottom:8%;left:0;color:#06343d;font-size:clamp(.7rem,1.7vw,.9rem);font-weight:900;text-shadow:none}
+.entry-option-action b{margin-left:5px}
+@keyframes choices-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.resume-view{max-width:920px;margin:auto;animation:view-fade-in .45s ease both}
+@keyframes view-fade-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.resume-toolbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 16px;background:linear-gradient(#f4fafb 80%,rgba(244,250,251,0))}
+.resume-toolbar button{padding:8px 12px;border:1px solid #9eb8bd;border-radius:4px;background:#fff;color:#183c43;font:600 .9rem "Nunito",sans-serif;cursor:pointer}
+.resume-toolbar button:hover{border-color:#168697;background:#eef9fa}
+.resume-document{padding:8px 2px 40px;color:#161d1f;font:400 1rem/1.55 Arial,Helvetica,sans-serif}
+.resume-document h1{margin:0 0 4px;font:700 2rem/1.2 Arial,Helvetica,sans-serif;color:#111}
+.resume-document header{padding-bottom:14px;border-bottom:2px solid #222}
+.resume-document header p{margin:4px 0}
+.resume-document a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.resume-document section{padding:16px 0 4px;border:0;border-bottom:1px solid #444}
+.resume-document h2{margin:0 0 8px;font:700 1rem/1.3 Arial,Helvetica,sans-serif;text-transform:uppercase}
+.resume-document section p{margin:4px 0}
+.resume-document h3{display:flex;justify-content:space-between;gap:12px;margin:12px 0 3px;font:700 1rem/1.35 Arial,Helvetica,sans-serif}
+.resume-document h3 span,.resume-document section>p span{flex:none;font-weight:400}
+.resume-document ul{margin:5px 0 8px;padding-left:22px}
+.resume-document li{margin-bottom:4px}
+@media (max-width:600px){
+.entry-flow{align-items:start;padding:22px 18px;place-items:center}
+.entry-options{gap:14px}
+.entry-option{width:clamp(124px,39vw,160px)}
+.entry-choices h1{margin-bottom:20px}
+.resume-toolbar{align-items:flex-start}
+.resume-toolbar button{flex:1}
+.resume-document{font-size:.95rem}
+.resume-document h1{font-size:1.7rem}
+.resume-document h3{flex-direction:column;gap:2px}
+.resume-document h3 span,.resume-document section>p span{font-size:.9rem}
+}
