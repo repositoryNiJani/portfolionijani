@@ -277,7 +277,8 @@ body:not([data-view="portfolio"]) #portfolio-view{visibility:hidden;opacity:0;po
 .entry-flow[hidden]{display:none}
 .entry-flow.leaving{opacity:0;pointer-events:none}
 .entry-flow>section{width:min(860px,100%);padding:0;border:0}
-.entry-choices{text-align:center;animation:choices-in .65s ease both}
+.entry-choices{text-align:center}
+.view-fade-in{animation:view-fade-in .55s ease both}
 .entry-eyebrow{margin:0 0 8px;color:#168697;font-size:.85rem;font-weight:800;letter-spacing:.2em}
 .entry-choices h1{margin:0 auto 36px;font-size:clamp(2rem,5vw,3.4rem);color:#0d4a55}
 .entry-options{display:flex;justify-content:center;gap:clamp(14px,5vw,48px)}
@@ -294,8 +295,7 @@ body:not([data-view="portfolio"]) #portfolio-view{visibility:hidden;opacity:0;po
 .entry-card-face small{font:600 clamp(.72rem,1.8vw,.95rem)/1.35 "Nunito",sans-serif}
 .entry-option-action{position:absolute;right:0;bottom:8%;left:0;color:#06343d;font-size:clamp(.7rem,1.7vw,.9rem);font-weight:900;text-shadow:none}
 .entry-option-action b{margin-left:5px}
-@keyframes choices-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.resume-view{max-width:920px;margin:auto;animation:view-fade-in .45s ease both}
+.resume-view{max-width:920px;margin:auto}
 @keyframes view-fade-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .resume-toolbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 16px;background:linear-gradient(#f4fafb 80%,rgba(244,250,251,0))}
 .resume-toolbar button{padding:8px 12px;border:1px solid #9eb8bd;border-radius:4px;background:#fff;color:#183c43;font:600 .9rem "Nunito",sans-serif;cursor:pointer}

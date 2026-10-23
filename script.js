@@ -246,10 +246,17 @@ if(projectModal.open){e.preventDefault();projectModal.close()}
 if(educationModal.open){e.preventDefault();educationModal.close()}
 if(!mobileMenu.hidden)closeMobileMenu();
 });
-var entryFlow=document.getElementById('entry-flow'),entryChoices=document.getElementById('entry-choices'),resumeView=document.getElementById('resume-view'),portfolioExitTimer;
+var entryFlow=document.getElementById('entry-flow'),entryChoices=document.getElementById('entry-choices'),resumeView=document.getElementById('resume-view'),portfolioView=document.getElementById('portfolio-view'),portfolioExitTimer;
 var prefersReducedMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fadeInView(view){
+if(prefersReducedMotion)return;
+view.classList.remove('view-fade-in');
+void view.offsetWidth;
+view.classList.add('view-fade-in');
+}
 function selectPortfolio(){
 document.body.dataset.view='portfolio';
+fadeInView(portfolioView);
 window.scrollTo(0,0);
 entryFlow.classList.add('leaving');
 window.clearTimeout(portfolioExitTimer);
@@ -260,10 +267,12 @@ window.clearTimeout(portfolioExitTimer);
 closeMobileMenu();
 entryFlow.hidden=false;entryFlow.classList.remove('leaving');
 entryChoices.hidden=true;resumeView.hidden=false;
+fadeInView(resumeView);
 document.body.dataset.view='resume';entryFlow.scrollTop=0;
 }
 function selectChoices(){
 resumeView.hidden=true;entryChoices.hidden=false;
+fadeInView(entryChoices);
 document.body.dataset.view='gateway';entryFlow.scrollTop=0;
 }
 document.getElementById('choose-resume').addEventListener('click',selectResume);
