@@ -45,7 +45,7 @@ h1 {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url('/bg.png'), linear-gradient(rgba(0, 72, 85, 0.8), rgb(0, 0, 0));
+  background-image: url('/bg.svg'), linear-gradient(rgba(0, 72, 85, 0.8), rgb(0, 0, 0));
   background-size: 80%, cover;
   background-repeat: no-repeat, no-repeat;
   background-position: center, center;

@@ -34,10 +34,10 @@ function App() {
   }, [isClicked]);
 
   const cards = [
-  { id: 1, image: '/back.png', title: 'Card 1', description: 'This is card 1' },
-  { id: 2, image: '/back.png', title: 'Card 2', description: 'This is card 2' },
-  { id: 3, image: '/back.png', title: 'Card 3', description: 'This is card 3' },
-  { id: 4, image: '/back.png', title: 'Card 4', description: 'This is card 4' },
+  { id: 1, image: '/back.svg', title: 'Card 1', description: 'This is card 1' },
+  { id: 2, image: '/back.svg', title: 'Card 2', description: 'This is card 2' },
+  { id: 3, image: '/back.svg', title: 'Card 3', description: 'This is card 3' },
+  { id: 4, image: '/back.svg', title: 'Card 4', description: 'This is card 4' },
 ];
 
   const handleImageClick = () => {
@@ -52,7 +52,7 @@ function App() {
        
     
        <div className={`transition-all text-[70px] md:text-[100px] text-white text-bold z-100`}>
-        <img src="/logo.png"  alt="logo" className={`transition-all duration-2000 ease-in-out 
+        <img src="/logo.svg"  alt="logo" className={`transition-all duration-2000 ease-in-out
         hover:-rotate-180 hover:scale-120 
         hover:drop-shadow-[0_0_20px_rgba(0,72,85)]
        w-[80px] h-[80px] md:w-[100px] md:h-[100px] 
@@ -93,23 +93,23 @@ function App() {
         ${isClicked ? 'opacity-100 translate-y-0'  : 'opacity-0 translate-y-20 pointer-events-none'}`}>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
            <div>
-            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            <img src="/back.svg" alt="card1" className='w-[90%] md:w-full
             hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
             transition-all duration-700 ease-in-out' />
             {/* <p>ABOUT ME</p> */}
            </div>
             <div>
-            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            <img src="/back.svg" alt="card1" className='w-[90%] md:w-full
             hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
             transition-all duration-700 ease-in-out' />
            </div>
             <div>
-            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            <img src="/back.svg" alt="card1" className='w-[90%] md:w-full
             hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
             transition-all duration-700 ease-in-out' />
            </div>
             <div>
-            <img src="/back.png" alt="card1" className='w-[90%] md:w-full
+            <img src="/back.svg" alt="card1" className='w-[90%] md:w-full
             hover:scale-110 hover:shadow-[0_0_100px_rgba(0,72,85)]
             transition-all duration-700 ease-in-out' />
            </div>
@@ -125,7 +125,7 @@ function App() {
       hover:shadow-[0_0_100px_rgba(0,72,85)]
         ${isDown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
         ${isClicked ? 'translate-y-[1000px]' : ''}
-        `} src="/back.png" alt="card" />
+        `} src="/back.svg" alt="card" />
     </div>
 
     
