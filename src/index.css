@@ -123,6 +123,12 @@ section>.wrap>h2{font-size:clamp(1.8rem,4vw,2.8rem);text-align:center;margin-bot
 .about dl div{border-left:3px solid var(--teal);padding-left:14px}
 .about dt{font-size:.85rem;color:var(--muted)}
 .about dd{margin:0;font-weight:500}
+.github-activity{max-width:920px;margin:52px auto 0;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:var(--field)}
+.github-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.github-activity-heading h3{font-size:1.35rem}
+.github-activity-heading a{color:var(--glow);font-size:.9rem;font-weight:700;text-underline-offset:3px}
+.github-contributions{overflow-x:auto}
+.github-contributions img{display:block;width:100%;min-width:680px;height:auto}
 .car{width:100vw;margin-left:calc(50% - 50vw);overflow:hidden;padding:18px 0 30px}
 .track{display:flex;gap:22px;width:max-content;will-change:transform}
 .track .sc{width:280px;min-height:200px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
