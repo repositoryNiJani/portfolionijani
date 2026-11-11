@@ -127,8 +127,8 @@ section>.wrap>h2{font-size:clamp(1.8rem,4vw,2.8rem);text-align:center;margin-bot
 .github-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
 .github-activity-heading h3{font-size:1.35rem}
 .github-activity-heading a{color:var(--glow);font-size:.9rem;font-weight:700;text-underline-offset:3px}
-.github-contributions{overflow-x:auto}
-.github-contributions img{display:block;width:100%;min-width:680px;height:auto}
+.github-contributions{overflow:hidden}
+.github-contributions iframe{display:block;width:100%;height:480px;border:0}
 .car{width:100vw;margin-left:calc(50% - 50vw);overflow:hidden;padding:18px 0 30px}
 .track{display:flex;gap:22px;width:max-content;will-change:transform}
 .track .sc{width:280px;min-height:200px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -236,6 +236,14 @@ section>.wrap>h2{font-size:clamp(1.8rem,4vw,2.8rem);text-align:center;margin-bot
 .sc p{margin:0;font-size:1rem;line-height:1.5}
 .sc .when{display:block;font-size:.9rem;font-weight:600;margin-top:4px;opacity:.8}
 .pair{grid-template-columns:repeat(3,1fr);max-width:1500px;margin:0 auto}
+.business-grid{gap:20px;align-items:stretch}
+.business-card{height:100%;padding:28px 22px;text-align:left}
+.business-card h3{margin-bottom:12px}
+.business-card p{color:var(--muted)}
+.business-note{max-width:65ch;margin:28px auto 0;color:var(--muted);text-align:center}
+.business-cta-wrap{margin:20px 0 0;text-align:center}
+.business-cta{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:var(--btnbg);color:var(--btnfg);font-weight:800;text-decoration:none}
+.business-cta:hover{transform:translateY(-2px);box-shadow:0 0 24px rgba(var(--glowrgb),.35)}
 .edu{padding:24px 22px}
 .edu[role="button"]{cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
 .edu[role="button"]:hover{transform:translateY(-4px);box-shadow:0 0 36px rgba(var(--glowrgb),.34)}
@@ -285,6 +293,7 @@ body:not([data-view="portfolio"]) #portfolio-view{visibility:hidden;opacity:0;po
 .entry-flow>section{width:min(860px,100%);padding:0;border:0}
 .entry-choices{text-align:center}
 .view-fade-in{animation:view-fade-in .55s ease both}
+#portfolio-view.view-fade-in{animation-fill-mode:backwards}
 .entry-eyebrow{margin:0 0 8px;color:#168697;font-size:.85rem;font-weight:800;letter-spacing:.2em}
 .entry-choices h1{margin:0 auto 36px;font-size:clamp(2rem,5vw,3.4rem);color:#0d4a55}
 .entry-options{display:flex;justify-content:center;gap:clamp(14px,5vw,48px)}

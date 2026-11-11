@@ -6,7 +6,10 @@ function App() {
   useEffect(() => {
     void import('../script.js');
     const hero = document.getElementById('top');
-    return hero ? initKoiPond(hero) : undefined;
+    const stopKoi = hero ? initKoiPond(hero) : undefined;
+    return () => {
+      if (stopKoi) stopKoi();
+    };
   }, []);
 
   return <div dangerouslySetInnerHTML={{ __html: portfolioMarkup }} />;
