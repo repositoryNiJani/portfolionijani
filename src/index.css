@@ -2816,3 +2816,47 @@ body:not([data-view="portfolio"]) #portfolio-view {
     bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* ===== Design fixes (Nov 2026) ===== */
+
+/* 1. Theme toggle no longer covers the hero side cards (desktop) */
+#portfolio-view .hero-bento-right {
+  top: 68px;
+  grid-template-rows: 76px 1fr 120px;
+}
+
+/* 2. Featured card: make the number the hero of the card */
+#portfolio-view .bento-feature strong {
+  font-size: 190px;
+  line-height: 0.8;
+  margin: auto 0;
+}
+
+/* 3. Headline stays readable above the koi */
+#portfolio-view .welcome {
+  z-index: 5;
+}
+#portfolio-view .hero-role {
+  text-shadow: 0 0 12px rgba(250, 253, 255, 0.95);
+}
+
+/* 4. Placeholder "image goes here" boxes are hidden until real images exist */
+#portfolio-view .phimg {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  /* Theme toggle moves to the top-right, clear of the bottom cards */
+  #portfolio-view .themes {
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    right: 12px;
+    bottom: auto;
+    left: auto;
+  }
+  #portfolio-view .hero-bento-right {
+    top: auto;
+  }
+  #portfolio-view .bento-feature strong {
+    font-size: 38px;
+  }
+}
