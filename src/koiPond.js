@@ -70,12 +70,23 @@ function makeTail(bx, by, ang, len, spread) {
   const px = -dy;
   const py = dx;
   const mid = { x: bx + dx * len * 0.5, y: by + dy * len * 0.5 };
-  const tipL = { x: bx + dx * len + px * spread, y: by + dy * len + py * spread };
-  const tipR = { x: bx + dx * len - px * spread, y: by + dy * len - py * spread };
+  const tipL = {
+    x: bx + dx * len + px * spread,
+    y: by + dy * len + py * spread,
+  };
+  const tipR = {
+    x: bx + dx * len - px * spread,
+    y: by + dy * len - py * spread,
+  };
   const notch = { x: bx + dx * len * 0.72, y: by + dy * len * 0.72 };
   const path = new Path2D();
   path.moveTo(bx + px * 2, by + py * 2);
-  path.quadraticCurveTo(mid.x + px * spread * 1.3, mid.y + py * spread * 1.3, tipL.x, tipL.y);
+  path.quadraticCurveTo(
+    mid.x + px * spread * 1.3,
+    mid.y + py * spread * 1.3,
+    tipL.x,
+    tipL.y,
+  );
   path.quadraticCurveTo(
     (tipL.x + notch.x) / 2 + px * spread * 0.15,
     (tipL.y + notch.y) / 2 + py * spread * 0.15,
@@ -88,7 +99,12 @@ function makeTail(bx, by, ang, len, spread) {
     tipR.x,
     tipR.y,
   );
-  path.quadraticCurveTo(mid.x - px * spread * 1.3, mid.y - py * spread * 1.3, bx - px * 2, by - py * 2);
+  path.quadraticCurveTo(
+    mid.x - px * spread * 1.3,
+    mid.y - py * spread * 1.3,
+    bx - px * 2,
+    by - py * 2,
+  );
   path.closePath();
   const rays = [-0.6, 0, 0.6].map((k) => ({
     x1: bx,
@@ -100,37 +116,59 @@ function makeTail(bx, by, ang, len, spread) {
 }
 
 export function initKoiPond(hero) {
-  const canvas = document.createElement('canvas');
-  canvas.className = 'koi-pond';
-  canvas.setAttribute('aria-hidden', 'true');
+  const canvas = document.createElement("canvas");
+  canvas.className = "koi-pond";
+  canvas.setAttribute("aria-hidden", "true");
   canvas.style.cssText =
-    'position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;';
-  const ctx = canvas.getContext('2d');
+    "position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;";
+  const ctx = canvas.getContext("2d");
   if (!ctx) return () => {};
 
   // Sit above the blurred background logo, below the welcome text and cards.
-  const bgf = hero.querySelector('.bgf');
+  const bgf = hero.querySelector(".bgf");
   hero.insertBefore(canvas, bgf ? bgf.nextSibling : hero.firstChild);
 
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
   const root = document.documentElement;
 
   let W = 0;
   let H = 0;
   let L = 160; // koi length in px
-  let rgb = '95,224,238'; // ripple color, follows the theme
+  let rgb = "95,224,238"; // ripple color, follows the theme
 
-  const koi = { x: 0, y: 0, ang: 0, speed: 1.5, phase: 0, travelled: 0, pts: [], seg: 10 };
-  const pointer = { x: 0, y: 0, active: false, inside: false, type: 'mouse', t: 0, rx: 0, ry: 0, rt: 0 };
+  const koi = {
+    x: 0,
+    y: 0,
+    ang: 0,
+    speed: 1.5,
+    phase: 0,
+    travelled: 0,
+    pts: [],
+    seg: 10,
+  };
+  const pointer = {
+    x: 0,
+    y: 0,
+    active: false,
+    inside: false,
+    type: "mouse",
+    t: 0,
+    rx: 0,
+    ry: 0,
+    rt: 0,
+  };
   const ripples = [];
 
   const readTheme = () => {
-    const v = getComputedStyle(root).getPropertyValue('--glowrgb').trim();
+    const v = getComputedStyle(root).getPropertyValue("--glowrgb").trim();
     if (v) rgb = v;
   };
   readTheme();
   const themeObserver = new MutationObserver(readTheme);
-  themeObserver.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  themeObserver.observe(root, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
 
   function place(x, y, ang) {
     koi.x = x;
@@ -138,7 +176,10 @@ export function initKoiPond(hero) {
     koi.ang = ang;
     koi.pts = [];
     for (let i = 0; i < N; i++) {
-      koi.pts.push({ x: x - Math.cos(ang) * koi.seg * i, y: y - Math.sin(ang) * koi.seg * i });
+      koi.pts.push({
+        x: x - Math.cos(ang) * koi.seg * i,
+        y: y - Math.sin(ang) * koi.seg * i,
+      });
     }
   }
 
@@ -149,7 +190,7 @@ export function initKoiPond(hero) {
     canvas.width = Math.max(1, Math.round(W * dpr));
     canvas.height = Math.max(1, Math.round(H * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    L = clamp(Math.min(W, H) * 0.50, 500, 700);
+    L = clamp(Math.min(W, H) * 0.5, 500, 700);
     koi.seg = L / (N - 1);
     if (!koi.pts.length && W > 0) place(W * 0.28, H * 0.62, -0.25);
   }
@@ -163,7 +204,9 @@ export function initKoiPond(hero) {
     const k = dt / 16.667;
     const sc = L / 170;
 
-    const following = pointer.active && (pointer.type === 'mouse' ? pointer.inside : now - pointer.t < 5000);
+    const following =
+      pointer.active &&
+      (pointer.type === "mouse" ? pointer.inside : now - pointer.t < 5000);
     let tx;
     let ty;
     if (following) {
@@ -288,7 +331,9 @@ export function initKoiPond(hero) {
     const addFin = (idx, side, len, wid, theta, fl) => {
       const bx = P[idx].x + F[idx].nx * side * w[idx] * 0.85;
       const by = P[idx].y + F[idx].ny * side * w[idx] * 0.85;
-      fins.push(makeFin(bx, by, F[idx].a + side * (theta + fl * side), len, wid));
+      fins.push(
+        makeFin(bx, by, F[idx].a + side * (theta + fl * side), len, wid),
+      );
     };
     const ip = Math.round(0.2 * (N - 1));
     const iv = Math.round(0.5 * (N - 1));
@@ -299,7 +344,13 @@ export function initKoiPond(hero) {
 
     // Tail
     const sway = Math.sin(koi.phase - 3.9) * (0.25 + 0.3 * speedN);
-    const tail = makeTail(P[N - 1].x, P[N - 1].y, F[N - 1].a + sway, L * 0.26, L * 0.1);
+    const tail = makeTail(
+      P[N - 1].x,
+      P[N - 1].y,
+      F[N - 1].a + sway,
+      L * 0.26,
+      L * 0.1,
+    );
 
     // Shadow, filled once as a union so overlaps don't darken.
     const shadow = new Path2D();
@@ -308,18 +359,18 @@ export function initKoiPond(hero) {
     shadow.addPath(tail.path);
     ctx.save();
     ctx.translate(L * 0.045, L * 0.07);
-    ctx.fillStyle = 'rgba(2,24,32,.2)';
+    ctx.fillStyle = "rgba(2,24,32,.2)";
     ctx.fill(shadow);
     ctx.restore();
 
     // Fins and tail
     ctx.lineWidth = 1;
     for (const f of [...fins, tail]) {
-      ctx.fillStyle = 'rgba(250,253,253,.94)';
+      ctx.fillStyle = "rgba(250,253,253,.94)";
       ctx.fill(f.path);
-      ctx.strokeStyle = 'rgba(10,70,82,.16)';
+      ctx.strokeStyle = "rgba(10,70,82,.16)";
       ctx.stroke(f.path);
-      ctx.strokeStyle = 'rgba(90,150,162,.38)';
+      ctx.strokeStyle = "rgba(90,150,162,.38)";
       ctx.lineWidth = 0.8;
       ctx.beginPath();
       for (const r of f.rays) {
@@ -331,13 +382,13 @@ export function initKoiPond(hero) {
     }
 
     // Body
-    ctx.fillStyle = '#fbfeff';
+    ctx.fillStyle = "#fbfeff";
     ctx.fill(body);
 
     // Orange patches, clipped to the body
     ctx.save();
     ctx.clip(body);
-    ctx.fillStyle = '#1a9ef6';
+    ctx.fillStyle = "#1a9ef6";
     for (const pa of PATCHES) {
       const f = pa.t * (N - 1);
       const i0 = Math.min(N - 2, Math.floor(f));
@@ -348,17 +399,25 @@ export function initKoiPond(hero) {
       const ny = F[i0].ny;
       const wAt = w[i0] + (w[i0 + 1] - w[i0]) * fr;
       ctx.beginPath();
-      ctx.ellipse(cx + nx * pa.off * wAt, cy + ny * pa.off * wAt, pa.rx * L, pa.ry * wAt, F[i0].a, 0, TAU);
+      ctx.ellipse(
+        cx + nx * pa.off * wAt,
+        cy + ny * pa.off * wAt,
+        pa.rx * L,
+        pa.ry * wAt,
+        F[i0].a,
+        0,
+        TAU,
+      );
       ctx.fill();
     }
     ctx.restore();
 
-    ctx.strokeStyle = 'rgba(10,70,82,.18)';
+    ctx.strokeStyle = "rgba(10,70,82,.18)";
     ctx.lineWidth = 1;
     ctx.stroke(body);
 
     // Eyes
-    ctx.fillStyle = '#17262b';
+    ctx.fillStyle = "#17262b";
     for (const side of [1, -1]) {
       const ex = P[1].x + F[1].nx * side * w[1] * 0.62;
       const ey = P[1].y + F[1].ny * side * w[1] * 0.62;
@@ -411,9 +470,12 @@ export function initKoiPond(hero) {
     pointer.y = y;
     pointer.active = true;
     pointer.inside = true;
-    pointer.type = e.pointerType || 'mouse';
+    pointer.type = e.pointerType || "mouse";
     pointer.t = now;
-    if (Math.hypot(x - pointer.rx, y - pointer.ry) >= 56 && now - pointer.rt >= 70) {
+    if (
+      Math.hypot(x - pointer.rx, y - pointer.ry) >= 56 &&
+      now - pointer.rt >= 70
+    ) {
       pointer.rx = x;
       pointer.ry = y;
       pointer.rt = now;
@@ -426,12 +488,12 @@ export function initKoiPond(hero) {
     for (let i = 0; i < 3; i++) addRipple(x, y, L * 1.25, 0.5, 150, i * 140, 2);
   }
   function onLeave(e) {
-    if ((e.pointerType || 'mouse') === 'mouse') pointer.inside = false;
+    if ((e.pointerType || "mouse") === "mouse") pointer.inside = false;
   }
 
-  hero.addEventListener('pointermove', onMove, { passive: true });
-  hero.addEventListener('pointerdown', onDown, { passive: true });
-  hero.addEventListener('pointerleave', onLeave, { passive: true });
+  hero.addEventListener("pointermove", onMove, { passive: true });
+  hero.addEventListener("pointerdown", onDown, { passive: true });
+  hero.addEventListener("pointerleave", onLeave, { passive: true });
 
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(hero);
@@ -444,17 +506,17 @@ export function initKoiPond(hero) {
   io.observe(hero);
 
   const onVisibility = () => (document.hidden ? stop() : start());
-  document.addEventListener('visibilitychange', onVisibility);
+  document.addEventListener("visibilitychange", onVisibility);
 
   resize();
   start();
 
   return () => {
     stop();
-    hero.removeEventListener('pointermove', onMove);
-    hero.removeEventListener('pointerdown', onDown);
-    hero.removeEventListener('pointerleave', onLeave);
-    document.removeEventListener('visibilitychange', onVisibility);
+    hero.removeEventListener("pointermove", onMove);
+    hero.removeEventListener("pointerdown", onDown);
+    hero.removeEventListener("pointerleave", onLeave);
+    document.removeEventListener("visibilitychange", onVisibility);
     resizeObserver.disconnect();
     io.disconnect();
     themeObserver.disconnect();
