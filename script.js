@@ -140,7 +140,7 @@
     a.select();
     try {
       document.execCommand("copy");
-    } catch (e) {}
+    } catch {}
     document.body.removeChild(a);
     done();
   }
@@ -201,7 +201,7 @@
     if (save) {
       try {
         localStorage.setItem("jani-theme", t);
-      } catch (e) {}
+      } catch {}
     }
   }
   tb.forEach(function (b) {
