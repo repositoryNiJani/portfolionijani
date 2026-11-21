@@ -1,6 +1,95 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowIcon, Sprite } from "../components/Icons.jsx";
 import { PROFILE, SOCIALS } from "../data/profile.js";
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function ScheduleCalendar() {
+  const [monthOffset, setMonthOffset] = useState(0);
+
+  const view = useMemo(() => {
+    const today = new Date();
+    const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+    const year = base.getFullYear();
+    const month = base.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const label = base.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+
+    const cells = [];
+    for (let i = 0; i < firstDay; i += 1) cells.push(null);
+    for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    const isCurrentMonth =
+      year === today.getFullYear() && month === today.getMonth();
+
+    return { year, month, label, cells, today: today.getDate(), isCurrentMonth };
+  }, [monthOffset]);
+
+  return (
+    <div className="schedule-calendar">
+      <div className="schedule-header">
+        <div>
+          <h2 id="schedule-title">My schedule</h2>
+          <p className="schedule-subtitle">Calendar</p>
+        </div>
+        <div className="calendar-controls" aria-label="Calendar month controls">
+          <button
+            type="button"
+            className="calendar-nav-btn"
+            onClick={() => setMonthOffset((v) => v - 1)}
+          >
+             Prev
+          </button>
+          <span className="calendar-month">{view.label}</span>
+          <button
+            type="button"
+            className="calendar-nav-btn"
+            onClick={() => setMonthOffset((v) => v + 1)}
+          >
+            Next 
+          </button>
+        </div>
+      </div>
+
+      <div className="calendar-grid heatmap-grid" role="grid" aria-label={`${view.label} calendar`}>
+        {WEEKDAYS.map((day) => (
+          <div key={day} className="calendar-weekday" role="columnheader">
+            {day}
+          </div>
+        ))}
+        {view.cells.map((day, index) => {
+          if (!day) {
+            return (
+              <div
+                key={`${view.year}-${view.month}-empty-${index}`}
+                className="heatmap-day empty"
+                role="gridcell"
+                aria-hidden="true"
+              />
+            );
+          }
+
+          const isToday = view.isCurrentMonth && day === view.today;
+          return (
+            <div
+              key={`${view.year}-${view.month}-${day}`}
+              className={`heatmap-day${isToday ? " today" : ""}`}
+              role="gridcell"
+              aria-current={isToday ? "date" : undefined}
+            >
+              <span className="heatmap-day-num">{day}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 async function copyText(text) {
   try {
@@ -80,6 +169,10 @@ export default function Contact() {
         </div>
         <p className="head-note">Find me online, or send me a message.</p>
       </div>
+
+      <section className="glass panel schedule-panel" aria-labelledby="schedule-title">
+        <ScheduleCalendar />
+      </section>
 
       <div className="contact-grid">
         <section className="glass panel" aria-labelledby="find-title">
