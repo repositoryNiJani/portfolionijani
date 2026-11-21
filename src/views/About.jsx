@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowIcon, Sprite } from "../components/Icons.jsx";
 import {
   ABOUT,
@@ -184,6 +185,10 @@ export default function About({ go }) {
                     setModalImage({
                       src: e.image,
                       alt: e.imageAlt || `${e.title} preview`,
+                      title: e.title,
+                      kind: e.kind,
+                      org: e.org,
+                      when: e.when,
                     })
                   }
                   aria-label={`Open ${e.title} image`}
@@ -196,27 +201,34 @@ export default function About({ go }) {
         </div>
       </section>
 
-      {modalImage && (
-        <div
-          className="preview-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label={modalImage.alt}
-          onClick={() => setModalImage(null)}
-        >
-          <div className="preview-modal-inner" onClick={(event) => event.stopPropagation()}>
-            <button
-              type="button"
-              className="preview-modal-close"
-              onClick={() => setModalImage(null)}
-              aria-label="Close preview"
-            >
-              ×
-            </button>
-            <img src={modalImage.src} alt={modalImage.alt} />
-          </div>
-        </div>
-      )}
+      {modalImage &&
+        createPortal(
+          <div
+            className="preview-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={modalImage.title || modalImage.alt}
+            onClick={() => setModalImage(null)}
+          >
+            <div className="preview-modal-inner" onClick={(event) => event.stopPropagation()}>
+              <div className="preview-modal-header">
+                <h2>{modalImage.title || "Document Details"}</h2>
+                <button
+                  type="button"
+                  className="preview-modal-close"
+                  onClick={() => setModalImage(null)}
+                  aria-label="Close preview"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="preview-modal-body">
+                <img className="preview-modal-image" src={modalImage.src} alt={modalImage.alt} />
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

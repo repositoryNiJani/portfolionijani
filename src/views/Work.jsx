@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowUpRightIcon, BigFolder } from "../components/Icons.jsx";
 import { FOLDERS } from "../data/projects.js";
 
@@ -124,7 +125,16 @@ export default function Work() {
             key={project.id}
             images={project.images}
             name={project.name}
-            onOpen={(image) => setModal({ image, name: project.name })}
+            onOpen={(image) =>
+              setModal({
+                image,
+                name: project.name,
+                full: project.full,
+                kind: project.kind,
+                meta: project.meta,
+                summary: project.summary,
+              })
+            }
           />
           <h2>{project.full}</h2>
           <span className="tag-light">{project.kind}</span>
@@ -162,40 +172,48 @@ export default function Work() {
         </aside>
       </div>
 
-      {modal && (
-        <div
-          className="preview-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${modal.name} preview`}
-          onClick={() => setModal(null)}
-        >
-          <div className="preview-modal-inner" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className="preview-modal-close"
-              onClick={() => setModal(null)}
-              aria-label="Close preview"
-            >
-              ×
-            </button>
-            {modal.image ? (
-              <img
-                src={modal.image.src}
-                alt={modal.image.alt ?? `${modal.name} screenshot`}
-              />
-            ) : (
-              <div className="preview-modal-empty">
-                <img
-                  src="/404.svg"
-                  alt="404 - no preview available"
-                  className="preview-modal-404"
-                />
+      {modal &&
+        createPortal(
+          <div
+            className="preview-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${modal.full || modal.name} preview`}
+            onClick={() => setModal(null)}
+          >
+            <div className="preview-modal-inner" onClick={(e) => e.stopPropagation()}>
+              <div className="preview-modal-header">
+                <h2>{modal.full || modal.name}</h2>
+                <button
+                  type="button"
+                  className="preview-modal-close"
+                  onClick={() => setModal(null)}
+                  aria-label="Close preview"
+                >
+                  &times;
+                </button>
               </div>
-            )}
-          </div>
-        </div>
-      )}
+              <div className="preview-modal-body">
+                {modal.image ? (
+                  <img
+                    className="preview-modal-image"
+                    src={modal.image.src}
+                    alt={modal.image.alt ?? `${modal.name} screenshot`}
+                  />
+                ) : (
+                  <div className="preview-modal-empty">
+                    <img
+                      src="/404.svg"
+                      alt="404 - no preview available"
+                      className="preview-modal-404"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
