@@ -366,11 +366,11 @@ export function initKoiPond(hero) {
     // Fins and tail
     ctx.lineWidth = 1;
     for (const f of [...fins, tail]) {
-      ctx.fillStyle = "rgba(250,253,253,.94)";
+      ctx.fillStyle = "rgba(234,246,255,.94)";
       ctx.fill(f.path);
-      ctx.strokeStyle = "rgba(10,70,82,.16)";
+      ctx.strokeStyle = "rgba(25,191,255,.22)";
       ctx.stroke(f.path);
-      ctx.strokeStyle = "rgba(90,150,162,.38)";
+      ctx.strokeStyle = "rgba(25,191,255,.38)";
       ctx.lineWidth = 0.8;
       ctx.beginPath();
       for (const r of f.rays) {
@@ -382,13 +382,13 @@ export function initKoiPond(hero) {
     }
 
     // Body
-    ctx.fillStyle = "#fbfeff";
+    ctx.fillStyle = "#f4fbff";
     ctx.fill(body);
 
-    // Orange patches, clipped to the body
+    // Sunset-orange patches, clipped to the body
     ctx.save();
     ctx.clip(body);
-    ctx.fillStyle = "#1a9ef6";
+    ctx.fillStyle = "#ff7a1a";
     for (const pa of PATCHES) {
       const f = pa.t * (N - 1);
       const i0 = Math.min(N - 2, Math.floor(f));
@@ -412,7 +412,7 @@ export function initKoiPond(hero) {
     }
     ctx.restore();
 
-    ctx.strokeStyle = "rgba(10,70,82,.18)";
+    ctx.strokeStyle = "rgba(25,191,255,.2)";
     ctx.lineWidth = 1;
     ctx.stroke(body);
 

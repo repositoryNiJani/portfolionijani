@@ -6,27 +6,33 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+    <meta name="theme-color" content="#0b1020" />
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("theme");
+          const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const theme = stored === "light" || stored === "dark" ? stored : (systemDark ? "dark" : "light");
+          document.documentElement.dataset.theme = theme;
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", theme === "dark" ? "#0b1020" : "#f4f8fc");
+        } catch {}
+      })();
+    </script>
+    <meta
+      name="description"
+      content="Jhonny M. Sumulong, BSIS student and web developer (Laravel, React, MySQL). Portfolio, projects and resume."
+    />
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <title>Jhonny M. Sumulong | Portfolio</title>
-    <script>
-      try {
-        var theme = localStorage.getItem("jani-theme");
-        document.documentElement.setAttribute(
-          "data-theme",
-          theme === "blue" ? "dark" : theme || "light",
-        );
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "light");
-      }
-    </script>
   </head>
-  <body data-view="gateway">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
