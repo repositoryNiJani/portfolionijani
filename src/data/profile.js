@@ -157,25 +157,25 @@ export const SOCIALS = [
   {
     name: "LinkedIn",
     sub: "jhonny-sumulong",
-    href: "https://linkedin.com/in/jhonny-sumulong",
+    href: "https://www.linkedin.com/in/jhonny-sumulong-a2441a208/",
     icon: "s-in",
   },
   {
     name: "Instagram",
     sub: "Say hi on Instagram",
-    href: "https://www.instagram.com/",
+    href: "https://www.instagram.com/_jhniiii/",
     icon: "s-ig",
   },
   {
     name: "Facebook",
     sub: "Message me on Facebook",
-    href: "https://www.facebook.com/",
+    href: "https://www.facebook.com/janiii25",
     icon: "s-fb",
   },
   {
     name: "Discord",
     sub: "Chat on Discord",
-    href: "https://discord.com/",
+    href: "https://discord.gg/AUQQSRNuK",
     icon: "s-dc",
   },
   {
