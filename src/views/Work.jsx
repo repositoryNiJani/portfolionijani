@@ -53,10 +53,19 @@ function Gallery({ images, name, onOpen }) {
 export default function Work() {
   const [folderId, setFolderId] = useState("main");
   const [selectedId, setSelectedId] = useState(FOLDERS.main.items[0].id);
+  const [searchQuery, setSearchQuery] = useState("");
   const [modal, setModal] = useState(null);
 
   const folder = FOLDERS[folderId];
-  const project = folder.items.find((p) => p.id === selectedId) ?? folder.items[0];
+  const query = searchQuery.trim().toLocaleLowerCase();
+  const filteredItems = folder.items.filter((item) =>
+    [item.name, item.full, item.kind, item.summary, ...item.tags]
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(query),
+  );
+  const project =
+    filteredItems.find((item) => item.id === selectedId) ?? filteredItems[0] ?? null;
 
   const pickFolder = (id) => {
     setFolderId(id);
@@ -101,74 +110,95 @@ export default function Work() {
         <section className="glass explorer" aria-label={`${folder.label} contents`}>
           <div className="explorer-bar">
             <span className="pill pill-light mono">{folder.path}</span>
-            <span className="mono count">{folder.items.length} items</span>
+            <span className="mono count">
+              {query ? `${filteredItems.length} of ${folder.items.length}` : folder.items.length} items
+            </span>
           </div>
+          <label className="work-search">
+            <input
+              type="search"
+              aria-label="Search projects"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search projects..."
+            />
+          </label>
           <div className="folders">
-            {folder.items.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className="folder"
-                aria-pressed={p.id === project.id}
-                onClick={() => setSelectedId(p.id)}
-              >
-                <BigFolder active={p.id === project.id} />
-                <span>{p.name}</span>
-              </button>
-            ))}
+            {filteredItems.length > 0 ? (
+              filteredItems.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="folder"
+                  aria-pressed={p.id === project?.id}
+                  onClick={() => setSelectedId(p.id)}
+                >
+                  <BigFolder active={p.id === project.id} />
+                  <span>{p.name}</span>
+                </button>
+              ))
+            ) : (
+              <p className="work-search-empty">No projects match “{searchQuery.trim()}”.</p>
+            )}
           </div>
         </section>
 
         <aside className="preview" aria-live="polite" aria-label="Project preview">
-          <p className="label label-light mono">Preview</p>
-          <Gallery
-            key={project.id}
-            images={project.images}
-            name={project.name}
-            onOpen={(image) =>
-              setModal({
-                image,
-                name: project.name,
-                full: project.full,
-                kind: project.kind,
-                meta: project.meta,
-                summary: project.summary,
-              })
-            }
-          />
-          <h2>{project.full}</h2>
-          <span className="tag-light">{project.kind}</span>
-          <p className="summary">{project.summary}</p>
-          <p className="meta mono">{project.meta}</p>
-          {project.bullets.length > 0 && (
-            <ul className="bullets">
-              {project.bullets.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
+          {!project ? (
+            <p className="work-preview-empty">Search for a project to see its preview.</p>
+          ) : (
+            <>
+              <p className="label label-light mono">Preview</p>
+              <Gallery
+                key={project.id}
+                images={project.images}
+                name={project.name}
+                onOpen={(image) =>
+                  setModal({
+                    image,
+                    name: project.name,
+                    full: project.full,
+                    kind: project.kind,
+                    meta: project.meta,
+                    summary: project.summary,
+                  })
+                }
+              />
+              <h2>{project.full}</h2>
+              <span className="tag-light">{project.kind}</span>
+              <p className="summary">{project.summary}</p>
+              <p className="meta mono">{project.meta}</p>
+              {project.bullets.length > 0 && (
+                <ul className="bullets">
+                  {project.bullets.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+              )}
+              {project.tags.length > 0 && (
+                <ul className="tags" aria-label="Technologies">
+                  {project.tags.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              )}
+              <div className="links">
+                {project.live && (
+                  <a className="btn-light" href={project.live} target="_blank" rel="noopener">
+                    Open project
+                    <span className="btn-arrow">
+                      <ArrowUpRightIcon width="16" height="16" />
+                    </span>
+                  </a>
+                )}
+                {project.repo && (
+                  <a className="btn-ghost" href={project.repo} target="_blank" rel="noopener">
+                    Source code
+                  </a>
+                )}
+              </div>
+            </>
           )}
-          {project.tags.length > 0 && (
-            <ul className="tags" aria-label="Technologies">
-              {project.tags.map((t) => (
-                <li key={t}>{t}</li>
-              ))}
-            </ul>
-          )}
-          <div className="links">
-            {project.live && (
-              <a className="btn-light" href={project.live} target="_blank" rel="noopener">
-                Open project
-                <span className="btn-arrow">
-                  <ArrowUpRightIcon width="16" height="16" />
-                </span>
-              </a>
-            )}
-            {project.repo && (
-              <a className="btn-ghost" href={project.repo} target="_blank" rel="noopener">
-                Source code
-              </a>
-            )}
-          </div>
         </aside>
       </div>
 

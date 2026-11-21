@@ -30,15 +30,21 @@ const pad = (n) => String(n).padStart(2, "0");
 
 export default function About({ go }) {
   const [modalImage, setModalImage] = useState(null);
+  const [whyModalOpen, setWhyModalOpen] = useState(false);
+  const [whyCardFlipped, setWhyCardFlipped] = useState(false);
 
   useEffect(() => {
-    if (!modalImage) return;
+    if (!modalImage && !whyModalOpen) return;
     const onKeyDown = (event) => {
-      if (event.key === "Escape") setModalImage(null);
+      if (event.key === "Escape") {
+        setModalImage(null);
+        setWhyModalOpen(false);
+        setWhyCardFlipped(true);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [modalImage]);
+  }, [modalImage, whyModalOpen]);
 
   return (
     <div className="stack">
@@ -122,17 +128,27 @@ export default function About({ go }) {
           {BUSINESS.cards.map((c) => (
             <article key={c.index} className="inner-card">
               <p className="label mono">
-                {c.index} · {c.kicker}
+                {c.index} ? {c.kicker}
               </p>
               <h3>{c.title}</h3>
               <p>{c.text}</p>
             </article>
           ))}
         </div>
-        <div className="inner-card why">
+        <button
+          type="button"
+          className="inner-card why why-card-trigger"
+          onClick={() => {
+            setWhyModalOpen(true);
+            setWhyCardFlipped(true);
+          }}
+        >
           <p className="label mono">04 · Why me?</p>
           <p>{BUSINESS.why}</p>
-        </div>
+          <span className="why-card-arrow" aria-hidden="true">
+            <ArrowIcon width="16" height="16" />
+          </span>
+        </button>
         <div className="cta-row">
           <p>{BUSINESS.note}</p>
           <button type="button" className="btn-pill" onClick={() => go("contact")}>
@@ -157,7 +173,11 @@ export default function About({ go }) {
               <ul className="chips" aria-label={`${g.title} skills`}>
                 {g.items.map((item) => (
                   <li key={item.name} className="chip">
-                    <Sprite id={item.icon} className="chip-ic" />
+                    {item.image ? (
+                      <img src={item.image} alt="" className="chip-ic" />
+                    ) : (
+                      <Sprite id={item.icon} className="chip-ic" />
+                    )}
                     {item.name}
                   </li>
                 ))}
@@ -225,6 +245,51 @@ export default function About({ go }) {
               <div className="preview-modal-body">
                 <img className="preview-modal-image" src={modalImage.src} alt={modalImage.alt} />
               </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      {whyModalOpen &&
+        createPortal(
+          <div
+            className="preview-modal why-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Why me card"
+            onClick={() => {
+              setWhyModalOpen(false);
+              setWhyCardFlipped(true);
+            }}
+          >
+            <div className="why-modal-content" onClick={(event) => event.stopPropagation()}>
+              <button
+                type="button"
+                className="preview-modal-close why-modal-close"
+                onClick={() => {
+                  setWhyModalOpen(false);
+                  setWhyCardFlipped(true);
+                }}
+                aria-label="Close card"
+              >
+                &times;
+              </button>
+              <button
+                type="button"
+                className={`deck-card${whyCardFlipped ? " flipped" : ""}`}
+                onClick={() => setWhyCardFlipped((value) => !value)}
+                aria-label={whyCardFlipped ? "Show front of card" : "Flip card"}
+              >
+                <span className="deck-card-inner">
+                  <span className="deck-card-face deck-card-front">
+                    <p className="label mono">04 · Why me?</p>
+                    <p className="deck-card-text">{BUSINESS.why}</p>
+                    <p className="why-flip-hint mono">Click card to flip</p>
+                  </span>
+                  <span className="deck-card-face deck-card-back">
+                    <img src="/back.svg" alt="Card back" className="deck-card-back-image" />
+                  </span>
+                </span>
+              </button>
             </div>
           </div>,
           document.body
