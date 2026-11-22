@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowIcon, Sprite } from "../components/Icons.jsx";
+import { ArrowRight } from "lucide-react";
+import { Sprite } from "../components/Icons.jsx";
 import {
   ABOUT,
   BUSINESS,
@@ -146,7 +147,7 @@ export default function About({ go }) {
           <p className="label mono">04 · Why me?</p>
           <p>{BUSINESS.why}</p>
           <span className="why-card-arrow" aria-hidden="true">
-            <ArrowIcon width="16" height="16" />
+            <ArrowRight size={16} />
           </span>
         </button>
         <div className="cta-row">
@@ -154,7 +155,7 @@ export default function About({ go }) {
           <button type="button" className="btn-pill" onClick={() => go("contact")}>
             {BUSINESS.cta}
             <span className="btn-arrow">
-              <ArrowIcon width="16" height="16" />
+              <ArrowRight size={16} />
             </span>
           </button>
         </div>

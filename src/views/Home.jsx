@@ -1,4 +1,4 @@
-import { ArrowIcon } from "../components/Icons.jsx";
+import { ArrowRight } from "lucide-react";
 import { PROFILE } from "../data/profile.js";
 
 const today = new Date().toLocaleDateString("en-US", {
@@ -34,7 +34,7 @@ export default function Home() {
           <a className="btn-pill" href="#/work">
             Explore work
             <span className="btn-arrow">
-              <ArrowIcon width="18" height="18" />
+              <ArrowRight size={18} />
             </span>
           </a>
           <p>{PROFILE.tagline}</p>

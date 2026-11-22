@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ArrowIcon, Sprite } from "../components/Icons.jsx";
+import { ArrowRight } from "lucide-react";
+import { Sprite } from "../components/Icons.jsx";
 import { PROFILE, SOCIALS } from "../data/profile.js";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -186,7 +187,11 @@ export default function Contact() {
                 target={s.href.startsWith("mailto:") ? undefined : "_blank"}
                 rel="noopener"
               >
-                <Sprite id={s.icon} className="social-ic" />
+                {s.image ? (
+                  <img className="social-ic" src={s.image} alt="" />
+                ) : (
+                  <Sprite id={s.icon} className="social-ic" />
+                )}
                 <strong>{s.name}</strong>
                 <span>{s.sub}</span>
               </a>
@@ -240,7 +245,7 @@ export default function Contact() {
             <button className="btn-pill" type="submit">
               Contact me
               <span className="btn-arrow">
-                <ArrowIcon width="16" height="16" />
+                <ArrowRight size={16} />
               </span>
             </button>
             <p

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUpRightIcon, BigFolder } from "../components/Icons.jsx";
+import { ArrowUpRight } from "lucide-react";
+import { BigFolder } from "../components/Icons.jsx";
 import { FOLDERS } from "../data/projects.js";
 
 // Projects are shown like a file explorer: pick a tab, pick a folder, read the preview.
@@ -187,7 +188,7 @@ export default function Work() {
                   <a className="btn-light" href={project.live} target="_blank" rel="noopener">
                     Open project
                     <span className="btn-arrow">
-                      <ArrowUpRightIcon width="16" height="16" />
+                      <ArrowUpRight size={16} />
                     </span>
                   </a>
                 )}

@@ -1,4 +1,4 @@
-import { DownloadIcon } from "../components/Icons.jsx";
+import { Download } from "lucide-react";
 import { PROFILE, RESUME } from "../data/profile.js";
 
 export default function Resume() {
@@ -15,7 +15,7 @@ export default function Resume() {
           <a className="btn-pill" href={PROFILE.resumePdf} download>
             Download PDF
             <span className="btn-arrow">
-              <DownloadIcon width="16" height="16" />
+              <Download size={16} />
             </span>
           </a>
           {/* <button type="button" className="btn-ghost" onClick={() => window.print()}>

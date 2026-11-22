@@ -153,6 +153,7 @@ export const SOCIALS = [
     sub: "repositoryNiJani",
     href: "https://github.com/repositoryNiJani",
     icon: "l-gh",
+    image: "/github.png",
   },
   {
     name: "LinkedIn",

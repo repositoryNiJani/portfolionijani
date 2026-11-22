@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
+import { FileText, Fish, Folder, Home, Mail, Moon, Sun, UserRound } from "lucide-react";
 import { PROFILE } from "../data/profile.js";
-import { FileIcon, FolderIcon, HomeIcon, MailIcon, MoonIcon, SunIcon, UserIcon } from "./Icons.jsx";
 
 const NAV = [
-  { id: "home", label: "Home", Icon: HomeIcon },
-  { id: "about", label: "About", Icon: UserIcon },
-  { id: "work", label: "Work", Icon: FolderIcon },
-  { id: "contact", label: "Contact", Icon: MailIcon },
-  { id: "resume", label: "Resume", Icon: FileIcon },
+  { id: "home", label: "Home", Icon: Home },
+  { id: "about", label: "About", Icon: UserRound },
+  { id: "work", label: "Work", Icon: Folder },
+  { id: "contact", label: "Contact", Icon: Mail },
+  { id: "resume", label: "Resume", Icon: FileText },
 ];
 
 function getInitialTheme() {
@@ -26,7 +26,7 @@ function getInitialTheme() {
 }
 
 // Docked to the left edge, full height. Becomes a bottom tab bar on phones.
-export default function Sidebar({ view }) {
+export default function Sidebar({ view, koiVisible, onToggleKoi }) {
   const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function Sidebar({ view }) {
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
-            {theme === "dark" ? <SunIcon width="22" height="22" /> : <MoonIcon width="22" height="22" />}
+            {theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
             <span>{theme === "dark" ? "Light" : "Dark"}</span>
           </button>
         </li>
@@ -77,7 +77,7 @@ export default function Sidebar({ view }) {
       <div className="side-footer">
         <div className="theme-row">
           <span className="theme-row-label">
-            {theme === "dark" ? <MoonIcon width="16" height="16" /> : <SunIcon width="16" height="16" />}
+            {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
             Dark mode
           </span>
           <button
@@ -87,6 +87,22 @@ export default function Sidebar({ view }) {
             aria-label="Dark mode"
             className="theme-switch"
             onClick={toggleTheme}
+          >
+            <span className="theme-switch-thumb" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="theme-row">
+          <span className="theme-row-label">
+            <Fish size={16} />
+            Show koi
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={koiVisible}
+            aria-label="Show koi"
+            className="theme-switch"
+            onClick={onToggleKoi}
           >
             <span className="theme-switch-thumb" aria-hidden="true" />
           </button>

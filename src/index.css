@@ -1612,6 +1612,7 @@ img {
   width: 42px;
   height: 42px;
   margin-bottom: 4px;
+  object-fit: contain;
 }
 .social strong {
   font-size: 14px;

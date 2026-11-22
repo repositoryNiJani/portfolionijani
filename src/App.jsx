@@ -31,9 +31,25 @@ export default function App() {
   const contentRef = useRef(null);
   const firstRender = useRef(true);
   const [view, setView] = useState(readHash);
+  const [koiVisible, setKoiVisible] = useState(() => {
+    try {
+      return localStorage.getItem("koi-visible") !== "false";
+    } catch {
+      return true;
+    }
+  });
 
   // The koi swims over the whole window and follows the pointer.
   useEffect(() => initKoiPond(appRef.current), []);
+
+  useEffect(() => {
+    appRef.current
+      ?.querySelector(".koi-pond")
+      ?.style.setProperty("display", koiVisible ? "block" : "none");
+    try {
+      localStorage.setItem("koi-visible", String(koiVisible));
+    } catch {}
+  }, [koiVisible]);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -72,7 +88,11 @@ export default function App() {
   return (
     <div className="app" ref={appRef}>
       <Pond />
-      <Sidebar view={view} />
+      <Sidebar
+        view={view}
+        koiVisible={koiVisible}
+        onToggleKoi={() => setKoiVisible((visible) => !visible)}
+      />
       <div className="content" ref={contentRef}>
         <div className="content-inner">
           <p className="crumb mono">jani.portfolio / 2026</p>
