@@ -379,9 +379,6 @@ img {
   background: transparent;
   text-align: left;
 }
-.profile-trigger:hover strong {
-  color: var(--accent);
-}
 .profile-copy {
   min-width: 0;
 }

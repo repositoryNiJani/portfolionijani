@@ -90,8 +90,7 @@ export default function Sidebar({ view, koiVisible, onToggleKoi }) {
           <button
             className="profile profile-trigger"
             type="button"
-            aria-label="Open admin login (click 10 times)"
-            title="Click 10 times to open admin login"
+            aria-label="Profile"
             onClick={() => {
               profileClicks.current += 1;
               if (profileClicks.current >= 7) {
