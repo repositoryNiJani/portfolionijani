@@ -24,7 +24,7 @@ export default function LoginModal({ onClose, onAuthenticated }) {
 
   useEffect(() => {
     if (!supabase) {
-      setMessage("Supabase is not configured.");
+      setMessage("Admin access is unavailable.");
       setError(true);
       return undefined;
     }
@@ -62,7 +62,7 @@ export default function LoginModal({ onClose, onAuthenticated }) {
   async function submit(event) {
     event.preventDefault();
     if (!supabase) {
-      setMessage("Supabase is not configured.");
+      setMessage("Admin access is unavailable.");
       setError(true);
       return;
     }

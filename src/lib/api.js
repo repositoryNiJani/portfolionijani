@@ -2,7 +2,7 @@ import { supabase, imageUrl } from "./supabase.js";
 
 // Loads all portfolio content in one go.
 export async function getPortfolio() {
-  if (!supabase) throw new Error("Supabase is not configured (.env missing)");
+  if (!supabase) throw new Error("aray boss may problema tayo");
 
   const [about, education, projects, skills] = await Promise.all([
     supabase.from("about").select("*").limit(1).maybeSingle(),
@@ -32,7 +32,7 @@ export async function getPortfolio() {
 
 // Saves a contact-form message (visitors can insert but never read).
 export async function sendMessage({ name, email, message }) {
-  if (!supabase) throw new Error("Supabase is not configured (.env missing)");
+  if (!supabase) throw new Error("aray boss may problema tayo");
   const { error } = await supabase
     .from("contact_messages")
     .insert({ name: name.trim(), email: email?.trim() || null, message: message.trim() });

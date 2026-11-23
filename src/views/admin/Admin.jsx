@@ -178,7 +178,7 @@ function AdminField({ field, value, onChange, onUploadStateChange, disabled }) {
       return;
     }
     if (!supabase) {
-      setUploadError("Supabase is not configured.");
+      setUploadError("Admin access is unavailable.");
       return;
     }
 
@@ -478,7 +478,7 @@ export default function Admin({ go }) {
   if (access !== "allowed") {
     const message = {
       checking: "Verifying your admin account…",
-      unavailable: "Supabase is not configured.",
+      unavailable: "Admin access is unavailable.",
       denied: "This account does not have admin access.",
       error: error || "Could not verify admin access.",
     }[access];
