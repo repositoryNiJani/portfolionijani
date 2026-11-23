@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Sprite } from "../components/Icons.jsx";
-import { PROFILE, SOCIALS } from "../data/profile.js";
+import { Sprite } from "../../components/Icons.jsx";
+import { PROFILE, SOCIALS } from "../../data/profile.js";
+import { sendMessage } from "../../lib/api.js";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -136,27 +137,44 @@ function CopyButton({ text }) {
 
 export default function Contact() {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [note, setNote] = useState({ text: "", error: false });
+  const [sending, setSending] = useState(false);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     const n = name.trim();
+    const address = email.trim();
     const m = message.trim();
-    if (!m) {
-      setNote({ text: "Please write a message first.", error: true });
+    if (!n || !m) {
+      setNote({ text: "Please enter your name and a message.", error: true });
       return;
     }
-    const url =
-      `mailto:${PROFILE.email}?subject=` +
-      encodeURIComponent(`Portfolio message${n ? ` from ${n}` : ""}`) +
-      `&body=` +
-      encodeURIComponent(m + (n ? `\n\n${n}` : ""));
-    window.open(url, "_blank", "noopener");
-    setNote({
-      text: `Opening your email app… if nothing opens, email me at ${PROFILE.email}.`,
-      error: false,
-    });
+    if (n.length > 100 || address.length > 200 || m.length > 5000) {
+      setNote({
+        text: "Name, email, or message is longer than the allowed limit.",
+        error: true,
+      });
+      return;
+    }
+
+    setSending(true);
+    setNote({ text: "", error: false });
+    try {
+      await sendMessage({ name: n, email: address, message: m });
+      setName("");
+      setEmail("");
+      setMessage("");
+      setNote({ text: "Your message has been sent. Thank you!", error: false });
+    } catch (sendError) {
+      setNote({
+        text: sendError.message || "Could not send your message. Please try again.",
+        error: true,
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -221,7 +239,7 @@ export default function Contact() {
 
         <section className="glass panel" aria-labelledby="form-title">
           <h2 id="form-title">Contact me</h2>
-          <form className="form" onSubmit={submit} noValidate>
+          <form className="form" onSubmit={submit}>
             <label>
               Your name
               <input
@@ -229,8 +247,22 @@ export default function Contact() {
                 name="name"
                 autoComplete="name"
                 placeholder="Your name"
+                maxLength={100}
+                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+            <label>
+              Your email (optional)
+              <input
+                type="email"
+                name="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                maxLength={200}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </label>
             <label className="grow">
@@ -238,12 +270,14 @@ export default function Contact() {
               <textarea
                 name="message"
                 placeholder="Hi Jhonny, I’d like to talk about…"
+                maxLength={5000}
+                required
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
             </label>
-            <button className="btn-pill" type="submit">
-              Contact me
+            <button className="btn-pill" type="submit" disabled={sending}>
+              {sending ? "Sending…" : "Send message"}
               <span className="btn-arrow">
                 <ArrowRight size={16} />
               </span>
@@ -253,7 +287,7 @@ export default function Contact() {
               role="status"
               aria-live="polite"
             >
-              {note.text || "This opens your email app with the message ready to send."}
+              {note.text || "Your message goes straight to my inbox."}
             </p>
           </form>
         </section>

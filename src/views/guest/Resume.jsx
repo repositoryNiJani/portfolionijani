@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import { PROFILE, RESUME } from "../data/profile.js";
+import { PROFILE, RESUME } from "../../data/profile.js";
 
 export default function Resume() {
   return (

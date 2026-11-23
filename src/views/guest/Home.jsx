@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { PROFILE } from "../data/profile.js";
+import { PROFILE } from "../../data/profile.js";
 
 const today = new Date().toLocaleDateString("en-US", {
   weekday: "short",

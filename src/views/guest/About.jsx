@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight } from "lucide-react";
-import { Sprite } from "../components/Icons.jsx";
 import {
   ABOUT,
   BUSINESS,
-  EDUCATION,
   PROFILE,
   SKILLS,
-} from "../data/profile.js";
-import { FOLDERS } from "../data/projects.js";
+} from "../../data/profile.js";
 
 const JUMPS = [
   ["overview", "Overview"],
@@ -22,17 +19,38 @@ const JUMPS = [
 const jump = (id) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-const projectCount = Object.values(FOLDERS).reduce(
-  (sum, folder) => sum + folder.items.length,
-  0,
-);
-const certCount = EDUCATION.filter((e) => e.kind === "Certificate").length;
 const pad = (n) => String(n).padStart(2, "0");
 
-export default function About({ go }) {
+const SKILL_TYPES = {
+  "01": "web_interface",
+  "02": "data",
+  "03": "access_integrity",
+  "04": "other",
+};
+
+function getVerificationUrl(value) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export default function About({ go, portfolio }) {
+  const { about, education, projects, skills } = portfolio;
   const [modalImage, setModalImage] = useState(null);
   const [whyModalOpen, setWhyModalOpen] = useState(false);
   const [whyCardFlipped, setWhyCardFlipped] = useState(false);
+  const aboutFacts = ABOUT.facts
+    .map((fact) => {
+      if (fact.label === "Based in") return { ...fact, value: about.location };
+      if (fact.label === "Looking for") return { ...fact, value: about.looking_for };
+      return fact;
+    })
+    .filter((fact) => fact.value);
+  const certCount = education.filter((item) => item.type === "certificate").length;
 
   useEffect(() => {
     if (!modalImage && !whyModalOpen) return;
@@ -67,10 +85,9 @@ export default function About({ go }) {
 
       <section id="overview" className="ab-top">
         <article className="photo-card">
-          <img src="/jani.png" alt={PROFILE.name} />
+          <img src={about.image || "/404.svg"} alt={PROFILE.name} />
           <div className="photo-cap">
             <h2>The Developer</h2>
-            <p className="mono">Laravel · React · MySQL</p>
           </div>
         </article>
         <article className="glass gh-card">
@@ -94,10 +111,10 @@ export default function About({ go }) {
         <div className="info-grid">
           <div>
             <h2 className="accent-h">Information about me</h2>
-            <p className="lead">{ABOUT.bio}</p>
+            <p className="lead">{about.description}</p>
           </div>
           <dl className="facts">
-            {ABOUT.facts.map((f) => (
+            {aboutFacts.map((f) => (
               <div key={f.label}>
                 <dt className="mono">{f.label}</dt>
                 <dd>{f.value}</dd>
@@ -107,7 +124,7 @@ export default function About({ go }) {
         </div>
         <dl className="stats">
           <div>
-            <dd className="mono">{pad(projectCount)}</dd>
+            <dd className="mono">{pad(projects.length)}</dd>
             <dt className="mono">Projects</dt>
           </div>
           <div>
@@ -166,25 +183,31 @@ export default function About({ go }) {
         <h2 className="display-h">{SKILLS.title}</h2>
         <p className="sub">{SKILLS.intro}</p>
         <div className="cards-2">
-          {SKILLS.groups.map((g) => (
-            <article key={g.index} className="inner-card">
-              <p className="label mono">{g.index}</p>
-              <h3>{g.title}</h3>
-              <p>{g.text}</p>
-              <ul className="chips" aria-label={`${g.title} skills`}>
-                {g.items.map((item) => (
-                  <li key={item.name} className="chip">
-                    {item.image ? (
-                      <img src={item.image} alt="" className="chip-ic" />
-                    ) : (
-                      <Sprite id={item.icon} className="chip-ic" />
-                    )}
-                    {item.name}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
+          {SKILLS.groups.map((group) => {
+            const groupSkills = skills.filter(
+              (skill) => skill.type === SKILL_TYPES[group.index],
+            );
+            if (groupSkills.length === 0) return null;
+            return (
+              <article key={group.index} className="inner-card">
+                <p className="label mono">{group.index}</p>
+                <h3>{group.title}</h3>
+                <p>{group.text}</p>
+                <ul className="chips" aria-label={`${group.title} skills`}>
+                  {groupSkills.map((skill) => (
+                    <li key={skill.id} className="chip">
+                      <img
+                        src={skill.image || "/404.svg"}
+                        alt=""
+                        className="chip-ic"
+                      />
+                      {skill.name}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -192,33 +215,37 @@ export default function About({ go }) {
         <p className="label mono">Education & certification</p>
         <h2 className="display-h">Education</h2>
         <div className="cards-3">
-          {EDUCATION.map((e) => (
-            <article key={e.title} className="inner-card education-card">
-              <p className="label mono">{e.kind}</p>
-              <h3>{e.title}</h3>
-              <p>{e.org}</p>
-              <p className="when mono">{e.when}</p>
-              {e.image && (
+          {education.map((item) => {
+            const verificationUrl = getVerificationUrl(item.description);
+            return (
+              <article key={item.id} className="inner-card education-card">
+                <p className="label mono">
+                  {item.type === "degree" ? "Degree" : "Certificate"}
+                </p>
+                <h3>{item.title}</h3>
+                {item.organization && <p>{item.organization}</p>}
+                {item.year && <p className="when mono">{item.year}</p>}
                 <button
                   type="button"
                   className="education-card-image"
                   onClick={() =>
                     setModalImage({
-                      src: e.image,
-                      alt: e.imageAlt || `${e.title} preview`,
-                      title: e.title,
-                      kind: e.kind,
-                      org: e.org,
-                      when: e.when,
+                      src: item.image || "/404.svg",
+                      alt: `${item.title} preview`,
+                      title: item.title,
+                      verificationUrl,
                     })
                   }
-                  aria-label={`Open ${e.title} image`}
+                  aria-label={`Open ${item.title} image`}
                 >
-                  <img src={e.image} alt={e.imageAlt || `${e.title} preview`} />
+                  <img
+                    src={item.image || "/404.svg"}
+                    alt={`${item.title} preview`}
+                  />
                 </button>
-              )}
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -246,6 +273,18 @@ export default function About({ go }) {
               <div className="preview-modal-body">
                 <img className="preview-modal-image" src={modalImage.src} alt={modalImage.alt} />
               </div>
+              {modalImage.verificationUrl && (
+                <div className="preview-modal-verification">
+                  <p>Verification link</p>
+                  <a
+                    href={modalImage.verificationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {modalImage.verificationUrl}
+                  </a>
+                </div>
+              )}
             </div>
           </div>,
           document.body

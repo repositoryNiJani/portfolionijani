@@ -1,8 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUpRight } from "lucide-react";
-import { BigFolder } from "../components/Icons.jsx";
-import { FOLDERS } from "../data/projects.js";
+import { BigFolder } from "../../components/Icons.jsx";
+import { FOLDERS } from "../../data/projects.js";
+
+const formatDate = (value) => {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+};
+
+function toProjectItem(project) {
+  const start = formatDate(project.start_date);
+  const end = formatDate(project.end_date) || (start ? "Present" : "");
+  const images = (project.images || []).filter((image) => image?.src);
+
+  return {
+    id: project.slug,
+    name: project.short_name || project.title,
+    full: project.title,
+    kind: project.kind || project.type,
+    summary: project.summary || project.description || "",
+    meta: [project.role, project.client, [start, end].filter(Boolean).join(" – ")]
+      .filter(Boolean)
+      .join(" · "),
+    bullets: project.highlights || [],
+    tags: project.tech_stack || [],
+    images: images.length
+      ? images
+      : project.image
+        ? [{ src: project.image, alt: `${project.title} preview` }]
+        : [],
+    live: project.live_url,
+    repo: project.repo_url,
+  };
+}
 
 // Projects are shown like a file explorer: pick a tab, pick a folder, read the preview.
 function Gallery({ images, name, onOpen }) {
@@ -51,13 +86,28 @@ function Gallery({ images, name, onOpen }) {
   );
 }
 
-export default function Work() {
+export default function Work({ portfolio }) {
+  const folders = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(FOLDERS).map(([id, folder]) => [
+          id,
+          {
+            ...folder,
+            items: portfolio.projects
+              .filter((project) => project.type === id)
+              .map(toProjectItem),
+          },
+        ]),
+      ),
+    [portfolio.projects],
+  );
   const [folderId, setFolderId] = useState("main");
   const [selectedId, setSelectedId] = useState(FOLDERS.main.items[0].id);
   const [searchQuery, setSearchQuery] = useState("");
   const [modal, setModal] = useState(null);
 
-  const folder = FOLDERS[folderId];
+  const folder = folders[folderId];
   const query = searchQuery.trim().toLocaleLowerCase();
   const filteredItems = folder.items.filter((item) =>
     [item.name, item.full, item.kind, item.summary, ...item.tags]
@@ -70,7 +120,7 @@ export default function Work() {
 
   const pickFolder = (id) => {
     setFolderId(id);
-    setSelectedId(FOLDERS[id].items[0].id);
+    setSelectedId(folders[id].items[0]?.id ?? null);
   };
 
   useEffect(() => {
@@ -92,7 +142,7 @@ export default function Work() {
           </h1>
         </div>
         <div className="tabs" role="group" aria-label="Project folders">
-          {Object.entries(FOLDERS).map(([id, f]) => (
+          {Object.entries(folders).map(([id, f]) => (
             <button
               key={id}
               type="button"
@@ -139,7 +189,11 @@ export default function Work() {
                 </button>
               ))
             ) : (
-              <p className="work-search-empty">No projects match “{searchQuery.trim()}”.</p>
+              <p className="work-search-empty">
+                {folder.items.length === 0
+                  ? "No projects have been added to this group yet."
+                  : `No projects match “${searchQuery.trim()}”.`}
+              </p>
             )}
           </div>
         </section>
@@ -167,8 +221,8 @@ export default function Work() {
               />
               <h2>{project.full}</h2>
               <span className="tag-light">{project.kind}</span>
-              <p className="summary">{project.summary}</p>
-              <p className="meta mono">{project.meta}</p>
+              {project.summary && <p className="summary">{project.summary}</p>}
+              {project.meta && <p className="meta mono">{project.meta}</p>}
               {project.bullets.length > 0 && (
                 <ul className="bullets">
                   {project.bullets.map((b) => (
