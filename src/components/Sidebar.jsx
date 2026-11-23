@@ -94,7 +94,7 @@ export default function Sidebar({ view, koiVisible, onToggleKoi }) {
             title="Click 10 times to open admin login"
             onClick={() => {
               profileClicks.current += 1;
-              if (profileClicks.current >= 1) {
+              if (profileClicks.current >= 7) {
                 profileClicks.current = 0;
                 setLoginOpen(true);
               }
