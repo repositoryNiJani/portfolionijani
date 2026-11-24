@@ -19,24 +19,89 @@ function toProjectItem(project) {
   const images = (project.images || []).filter((image) => image?.src);
 
   return {
-    id: project.slug,
+    id: project.id ?? project.short_name ?? project.title,
     name: project.short_name || project.title,
     full: project.title,
-    kind: project.kind || project.type,
+    kind: project.type === "main" ? "Main Project" : "Side Project",
+    status: project.status || "ongoing",
     summary: project.summary || project.description || "",
     meta: [project.role, project.client, [start, end].filter(Boolean).join(" – ")]
       .filter(Boolean)
       .join(" · "),
     bullets: project.highlights || [],
     tags: project.tech_stack || [],
-    images: images.length
-      ? images
-      : project.image
-        ? [{ src: project.image, alt: `${project.title} preview` }]
-        : [],
+    cover: project.image ? { src: project.image, alt: `${project.title} cover` } : null,
+    images,
     live: project.live_url,
     repo: project.repo_url,
   };
+}
+
+function DocumentationCarousel({ images, name, initialIndex }) {
+  const [index, setIndex] = useState(initialIndex);
+  const activeImage = images[index];
+
+  useEffect(() => {
+    if (images.length < 2) return undefined;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % images.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [images.length]);
+
+  if (!activeImage) {
+    return (
+      <div className="preview-modal-empty">
+        <img
+          src="/404.svg"
+          alt="404 - no preview available"
+          className="preview-modal-404"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="documentation-carousel" aria-label={`${name} documentation images`}>
+      <img
+        key={activeImage.src}
+        className="preview-modal-image documentation-carousel-image"
+        src={activeImage.src}
+        alt={activeImage.alt ?? `${name} screenshot`}
+      />
+      {images.length > 1 && (
+        <div className="documentation-carousel-controls">
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => setIndex((current) => (current - 1 + images.length) % images.length)}
+            aria-label="Previous documentation image"
+          >
+            Previous
+          </button>
+          <div className="documentation-carousel-dots" role="group" aria-label="Choose a documentation image">
+            {images.map((image, imageIndex) => (
+              <button
+                key={`${image.src}-${imageIndex}`}
+                type="button"
+                aria-label={`Show documentation image ${imageIndex + 1}`}
+                aria-pressed={imageIndex === index}
+                onClick={() => setIndex(imageIndex)}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => setIndex((current) => (current + 1) % images.length)}
+            aria-label="Next documentation image"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Projects are shown like a file explorer: pick a tab, pick a folder, read the preview.
@@ -86,7 +151,7 @@ function Gallery({ images, name, onOpen }) {
   );
 }
 
-export default function Work({ portfolio }) {
+export default function Work({ portfolio, go }) {
   const folders = useMemo(
     () =>
       Object.fromEntries(
@@ -206,21 +271,37 @@ export default function Work({ portfolio }) {
               <p className="label label-light mono">Preview</p>
               <Gallery
                 key={project.id}
-                images={project.images}
+                images={project.cover ? [project.cover] : project.images}
                 name={project.name}
-                onOpen={(image) =>
+                onOpen={(image) => {
+                  const images = project.images.length
+                    ? project.images
+                    : project.cover
+                      ? [project.cover]
+                      : [];
+                  const initialIndex = Math.max(
+                    0,
+                    images.findIndex((item) => item.src === image?.src),
+                  );
                   setModal({
-                    image,
+                    images,
+                    initialIndex,
                     name: project.name,
                     full: project.full,
                     kind: project.kind,
+                    status: project.status,
                     meta: project.meta,
                     summary: project.summary,
-                  })
-                }
+                  });
+                }}
               />
               <h2>{project.full}</h2>
-              <span className="tag-light">{project.kind}</span>
+              <div className="project-labels">
+                <span className="tag-light project-label">{project.kind}</span>
+                <span className={`tag-light project-label project-status status-${project.status}`}>
+                  {project.status}
+                </span>
+              </div>
               {project.summary && <p className="summary">{project.summary}</p>}
               {project.meta && <p className="meta mono">{project.meta}</p>}
               {project.bullets.length > 0 && (
@@ -251,6 +332,15 @@ export default function Work({ portfolio }) {
                     Source code
                   </a>
                 )}
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() =>
+                    go(`contact?came_from=${encodeURIComponent(project.full)}`)
+                  }
+                >
+                  Contact about this project
+                </button>
               </div>
             </>
           )}
@@ -279,21 +369,11 @@ export default function Work({ portfolio }) {
                 </button>
               </div>
               <div className="preview-modal-body">
-                {modal.image ? (
-                  <img
-                    className="preview-modal-image"
-                    src={modal.image.src}
-                    alt={modal.image.alt ?? `${modal.name} screenshot`}
-                  />
-                ) : (
-                  <div className="preview-modal-empty">
-                    <img
-                      src="/404.svg"
-                      alt="404 - no preview available"
-                      className="preview-modal-404"
-                    />
-                  </div>
-                )}
+                <DocumentationCarousel
+                  images={modal.images}
+                  name={modal.name}
+                  initialIndex={modal.initialIndex}
+                />
               </div>
             </div>
           </div>,

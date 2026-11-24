@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { imageUrl, supabase } from "../../lib/supabase.js";
+import { MESSAGE_STATUSES, MESSAGE_TYPES } from "../../data/messages.js";
 import AdminSidebar from "./AdminSidebar.jsx";
 
 const SECTIONS = [
@@ -20,7 +21,7 @@ const SECTIONS = [
   { id: "education", label: "Education", Icon: GraduationCap, table: "education" },
   { id: "projects", label: "Projects", Icon: BriefcaseBusiness, table: "projects" },
   { id: "skills", label: "Skills", Icon: Wrench, table: "technical_skills" },
-  { id: "messages", label: "Messages", Icon: Mail, table: "contact_messages" },
+  { id: "messages", label: "Messages", Icon: Mail, table: "contact_inquiries" },
 ];
 
 const FIELDS = {
@@ -45,32 +46,44 @@ const FIELDS = {
     },
     { name: "year", label: "Year", optional: true },
     { name: "image", label: "Education image", kind: "image", optional: true },
-    { name: "sort_order", label: "Display order", type: "number", required: true },
   ],
   projects: [
-    { name: "slug", label: "URL slug", required: true },
-    { name: "title", label: "Project title", required: true },
-    { name: "short_name", label: "Short name", optional: true },
-    { name: "type", label: "Group", kind: "select", options: ["main", "side"], required: true },
-    { name: "kind", label: "Project type", optional: true },
+    { name: "title", label: "Title", required: true },
+    { name: "short_name", label: "Short name (optional)", optional: true },
+    {
+      name: "type",
+      label: "Project type",
+      kind: "select",
+      options: ["main", "side"],
+      labels: { main: "Main Project", side: "Side Project" },
+      required: true,
+    },
+    {
+      name: "status",
+      label: "Status",
+      kind: "select",
+      options: ["ongoing", "complete", "pending"],
+      labels: { complete: "Complete", ongoing: "Ongoing", pending: "Pending" },
+      defaultValue: "ongoing",
+      required: true,
+    },
     { name: "role", label: "Role", optional: true },
-    { name: "client", label: "Client or organization", optional: true },
+    { name: "client", label: "Client organization (optional)", optional: true },
     { name: "start_date", label: "Start date", type: "date", optional: true },
-    { name: "end_date", label: "End date", type: "date", optional: true },
+    { name: "end_date", label: "End date (optional)", type: "date", optional: true },
     { name: "summary", label: "Summary", kind: "textarea", optional: true },
     { name: "highlights", label: "Highlights (one per line)", kind: "lines", optional: true },
     { name: "tech_stack", label: "Technologies (one per line)", kind: "lines", optional: true },
-    { name: "image", label: "Cover image", kind: "image", optional: true },
+    { name: "image", label: "Cover image (optional)", kind: "image", optional: true },
     {
       name: "images",
-      label: "Gallery images (JSON array)",
-      kind: "json",
+      label: "Documentation images (optional)",
+      kind: "gallery",
       optional: true,
-      hint: 'Example: [{"src":"images/project.png","alt":"Project screen"}]',
+      hint: "Upload multiple images to display in the project modal carousel.",
     },
-    { name: "live_url", label: "Live URL", type: "url", optional: true },
-    { name: "repo_url", label: "Repository URL", type: "url", optional: true },
-    { name: "sort_order", label: "Display order", type: "number", required: true },
+    { name: "live_url", label: "Live URL (optional)", type: "url", optional: true },
+    { name: "repo_url", label: "Repository (optional)", type: "url", optional: true },
   ],
   skills: [
     {
@@ -82,7 +95,6 @@ const FIELDS = {
     },
     { name: "name", label: "Skill", required: true },
     { name: "image", label: "Skill icon", kind: "image", optional: true },
-    { name: "sort_order", label: "Display order", type: "number", required: true },
   ],
 };
 
@@ -97,7 +109,7 @@ const EMPTY_RECORDS = {
 const valueFor = (field, value) => {
   if (value == null) return "";
   if (field.kind === "lines") return Array.isArray(value) ? value.join("\n") : "";
-  if (field.kind === "json") return JSON.stringify(value, null, 2);
+  if (field.kind === "gallery") return JSON.stringify(Array.isArray(value) ? value : []);
   return String(value);
 };
 
@@ -118,13 +130,18 @@ function makePayload(section, draft) {
         .split(/\r?\n/)
         .map((item) => item.trim())
         .filter(Boolean);
-    } else if (field.kind === "json") {
+    } else if (field.kind === "gallery") {
       try {
         const value = raw.trim() ? JSON.parse(raw) : [];
-        if (!Array.isArray(value)) throw new Error("Gallery images must be a JSON array.");
+        if (
+          !Array.isArray(value) ||
+          value.some((image) => !image || typeof image.src !== "string" || !image.src.trim())
+        ) {
+          throw new Error("Documentation images must be a list of uploaded images.");
+        }
         payload[field.name] = value;
       } catch (error) {
-        throw new Error(error.message || "Gallery images must be valid JSON.");
+        throw new Error(error.message || "Documentation images must be valid.");
       }
     } else if (field.type === "number") {
       const value = raw.trim();
@@ -147,7 +164,11 @@ function initialDraft(section, record) {
       valueFor(
         field,
         record?.[field.name] ??
-          (field.kind === "select" ? field.options[0] : field.name === "sort_order" ? 0 : ""),
+          (field.kind === "select"
+            ? field.defaultValue || field.options[0]
+            : field.kind === "gallery"
+              ? []
+              : ""),
       ),
     ]),
   );
@@ -167,14 +188,19 @@ function AdminField({ field, value, onChange, onUploadStateChange, disabled }) {
     onChange: (event) => onChange(field.name, event.target.value),
   };
 
-  async function uploadImage(file) {
-    if (!file || uploading || disabled) return;
-    if (!file.type.startsWith("image/")) {
-      setUploadError("Choose an image file.");
+  async function uploadImage(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length || uploading || disabled) return;
+    if (field.kind !== "gallery" && files.length > 1) {
+      setUploadError("Choose one image for this field.");
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      setUploadError("Image must be 10 MB or smaller.");
+    if (files.some((file) => !file.type.startsWith("image/"))) {
+      setUploadError("Choose image files.");
+      return;
+    }
+    if (files.some((file) => file.size > 10 * 1024 * 1024)) {
+      setUploadError("Each image must be 10 MB or smaller.");
       return;
     }
     if (!supabase) {
@@ -186,22 +212,31 @@ function AdminField({ field, value, onChange, onUploadStateChange, disabled }) {
     setUploadError("");
     onUploadStateChange(field.name, true);
     try {
-      const extension =
-        file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "img";
-      const uniqueId =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const path = `images/${uniqueId}.${extension}`;
-      const { error: uploadError } = await supabase.storage
-        .from("portfolio")
-        .upload(path, file, {
-          cacheControl: "3600",
-          contentType: file.type,
-          upsert: false,
-        });
-      if (uploadError) throw uploadError;
-      onChange(field.name, path);
+      const uploadedImages = [];
+      for (const file of files) {
+        const extension =
+          file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "img";
+        const uniqueId =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const path = `images/${uniqueId}.${extension}`;
+        const { error: storageError } = await supabase.storage
+          .from("portfolio")
+          .upload(path, file, {
+            cacheControl: "3600",
+            contentType: file.type,
+            upsert: false,
+          });
+        if (storageError) throw storageError;
+        uploadedImages.push({ src: path, alt: file.name });
+      }
+      if (field.kind === "gallery") {
+        const existingImages = value ? JSON.parse(value) : [];
+        onChange(field.name, JSON.stringify([...existingImages, ...uploadedImages]));
+      } else {
+        onChange(field.name, uploadedImages[0].src);
+      }
     } catch (error) {
       setUploadError(error.message || "Could not upload this image.");
     } finally {
@@ -225,8 +260,7 @@ function AdminField({ field, value, onChange, onUploadStateChange, disabled }) {
           onDrop={(event) => {
             event.preventDefault();
             setDragging(false);
-            const [file] = event.dataTransfer.files;
-            if (file) uploadImage(file);
+            uploadImage(event.dataTransfer.files);
           }}
         >
           {preview && <img className="admin-image-preview" src={preview} alt="Current upload" />}
@@ -258,8 +292,7 @@ function AdminField({ field, value, onChange, onUploadStateChange, disabled }) {
             accept="image/*"
             aria-label={`Upload ${field.label.toLowerCase()}`}
             onChange={(event) => {
-              const [file] = event.target.files;
-              if (file) uploadImage(file);
+              uploadImage(event.target.files);
               event.target.value = "";
             }}
             disabled={disabled || uploading}
@@ -274,19 +307,99 @@ function AdminField({ field, value, onChange, onUploadStateChange, disabled }) {
     );
   }
 
+  if (field.kind === "gallery") {
+    const images = value ? JSON.parse(value) : [];
+    return (
+      <div className="admin-field admin-field-wide">
+        <span>{field.label}</span>
+        <div
+          className={`admin-image-dropzone${dragging ? " is-dragging" : ""}`}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDragging(false);
+            uploadImage(event.dataTransfer.files);
+          }}
+        >
+          {images.length > 0 && (
+            <div className="admin-gallery-previews">
+              {images.map((image, index) => (
+                <div className="admin-gallery-item" key={`${image.src}-${index}`}>
+                  <img
+                    className="admin-image-preview"
+                    src={imageUrl(image.src)}
+                    alt={image.alt || `Documentation image ${index + 1}`}
+                  />
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() =>
+                      onChange(
+                        field.name,
+                        JSON.stringify(images.filter((_, imageIndex) => imageIndex !== index)),
+                      )
+                    }
+                    disabled={disabled || uploading}
+                    aria-label={`Remove documentation image ${index + 1}`}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <Upload size={22} aria-hidden="true" />
+          <p>{uploading ? "Uploading images…" : "Drop images here or choose files"}</p>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => fileInput.current?.click()}
+            disabled={disabled || uploading}
+          >
+            Browse images
+          </button>
+          <small>Images up to 10 MB each are uploaded to Supabase Storage.</small>
+          <input
+            ref={fileInput}
+            className="admin-image-input"
+            type="file"
+            accept="image/*"
+            multiple
+            aria-label={`Upload ${field.label.toLowerCase()}`}
+            onChange={(event) => {
+              uploadImage(event.target.files);
+              event.target.value = "";
+            }}
+            disabled={disabled || uploading}
+          />
+        </div>
+        {field.hint && <small>{field.hint}</small>}
+        {uploadError && (
+          <small className="admin-image-error" role="alert">
+            {uploadError}
+          </small>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <label className={`admin-field${field.kind === "textarea" || field.kind === "lines" || field.kind === "json" ? " admin-field-wide" : ""}`}>
+    <label className={`admin-field${field.kind === "textarea" || field.kind === "lines" ? " admin-field-wide" : ""}`}>
       <span>{field.label}</span>
       {field.kind === "select" ? (
         <select {...controlProps}>
           {field.options.map((option) => (
             <option key={option} value={option}>
-              {option.replaceAll("_", " ")}
+              {field.labels?.[option] || option.replaceAll("_", " ")}
             </option>
           ))}
         </select>
-      ) : field.kind === "textarea" || field.kind === "lines" || field.kind === "json" ? (
-        <textarea {...controlProps} rows={field.kind === "json" ? 6 : 4} />
+      ) : field.kind === "textarea" || field.kind === "lines" ? (
+        <textarea {...controlProps} rows={4} />
       ) : (
         <input {...controlProps} type={field.type || "text"} />
       )}
@@ -306,6 +419,15 @@ export default function Admin({ go }) {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [listSearch, setListSearch] = useState("");
+  const [educationTypeFilter, setEducationTypeFilter] = useState("all");
+  const [projectTypeFilter, setProjectTypeFilter] = useState("all");
+  const [projectStatusFilter, setProjectStatusFilter] = useState("all");
+  const [skillTypeFilter, setSkillTypeFilter] = useState("all");
+  const [messageTypeFilter, setMessageTypeFilter] = useState("all");
+  const [messageSourceFilter, setMessageSourceFilter] = useState("all");
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [messageDraft, setMessageDraft] = useState({ status: "pending", favorite: false });
 
   const loadRecords = useCallback(async () => {
     if (!supabase) return;
@@ -314,10 +436,14 @@ export default function Admin({ go }) {
     try {
       const results = await Promise.all([
         supabase.from("about").select("*").order("id").limit(1),
-        supabase.from("education").select("*").order("sort_order"),
-        supabase.from("projects").select("*").order("sort_order"),
-        supabase.from("technical_skills").select("*").order("sort_order"),
-        supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
+        supabase.from("education").select("*").order("created_at").order("id"),
+        supabase.from("projects").select("*").order("created_at").order("id"),
+        supabase.from("technical_skills").select("*").order("created_at").order("id"),
+        supabase
+          .from("contact_inquiries")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false }),
       ]);
       const failed = results.find((result) => result.error);
       if (failed?.error) throw failed.error;
@@ -407,6 +533,16 @@ export default function Admin({ go }) {
     setError("");
   }
 
+  function openMessage(record) {
+    setSelectedMessage(record);
+    setMessageDraft({
+      status: record.status || "pending",
+      favorite: record.favorite === true,
+    });
+    setError("");
+    setNotice("");
+  }
+
   async function saveRecord(event) {
     event.preventDefault();
     if (!supabase || !editing || uploadingFields.size > 0) return;
@@ -442,7 +578,7 @@ export default function Admin({ go }) {
 
   async function deleteRecord(section, record) {
     if (!supabase || !window.confirm(`Delete “${recordTitle(section, record)}”? This cannot be undone.`)) {
-      return;
+      return false;
     }
     setBusy(true);
     setNotice("");
@@ -453,8 +589,33 @@ export default function Admin({ go }) {
       if (deleteError) throw deleteError;
       setNotice("Record deleted.");
       await loadRecords();
+      return true;
     } catch (deleteError) {
       setError(deleteError.message || "Could not delete this record.");
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveMessageDetails() {
+    if (!supabase || !selectedMessage) return;
+    setBusy(true);
+    setNotice("");
+    setError("");
+    try {
+      const { data, error: updateError } = await supabase
+        .from("contact_inquiries")
+        .update(messageDraft)
+        .eq("id", selectedMessage.id)
+        .select("*")
+        .single();
+      if (updateError) throw updateError;
+      setSelectedMessage(data);
+      setNotice("Message details saved.");
+      await loadRecords();
+    } catch (updateError) {
+      setError(updateError.message || "Could not update this message.");
     } finally {
       setBusy(false);
     }
@@ -498,6 +659,47 @@ export default function Admin({ go }) {
 
   const currentSection = SECTIONS.find((section) => section.id === activeSection);
   const currentRecords = currentSection ? records[activeSection] : [];
+  const messageSources = [
+    ...new Set(records.messages.map((record) => record.came_from).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b));
+  const filteredMessages = records.messages.filter(
+    (record) =>
+      (messageTypeFilter === "all" || record.message_type === messageTypeFilter) &&
+      (messageSourceFilter === "all" || record.came_from === messageSourceFilter),
+  );
+  const search = listSearch.trim().toLocaleLowerCase();
+  const filteredRecords = currentRecords.filter((record) => {
+    if (activeSection === "education" && educationTypeFilter !== "all" && record.type !== educationTypeFilter) {
+      return false;
+    }
+    if (activeSection === "projects") {
+      if (projectTypeFilter !== "all" && record.type !== projectTypeFilter) return false;
+      if (projectStatusFilter !== "all" && record.status !== projectStatusFilter) return false;
+    }
+    if (activeSection === "skills" && skillTypeFilter !== "all" && record.type !== skillTypeFilter) {
+      return false;
+    }
+
+    const searchFields =
+      activeSection === "education"
+        ? [record.title, record.organization, record.year, record.type]
+        : activeSection === "projects"
+          ? [
+              record.title,
+              record.short_name,
+              record.role,
+              record.client,
+              record.summary,
+              ...(record.highlights || []),
+              ...(record.tech_stack || []),
+            ]
+          : [record.name, record.type];
+    return searchFields
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(search);
+  });
   const renderFields = (section) =>
     FIELDS[section].map((field) => (
       <AdminField
@@ -529,6 +731,8 @@ export default function Admin({ go }) {
         onSignOut={signOut}
         onSelect={(section) => {
           setActiveSection(section);
+          setListSearch("");
+          setSelectedMessage(null);
           if (section === "about") {
             if (activeSection !== "about") {
               startEditing(section, records.about[0] ?? null);
@@ -549,7 +753,6 @@ export default function Admin({ go }) {
                 MANAGE YOUR PORTFOLIO
               </h1>
             </div>
-            <p className="head-note">Edit the content stored in your Supabase database.</p>
           </header>
 
           <section className="admin-content glass block">
@@ -573,7 +776,10 @@ export default function Admin({ go }) {
                     className="admin-stat-card"
                     key={id}
                     type="button"
-                    onClick={() => setActiveSection(id)}
+                    onClick={() => {
+                      setListSearch("");
+                      setActiveSection(id);
+                    }}
                   >
                     <span className="admin-stat-icon"><Icon size={20} /></span>
                     <span className="admin-stat-label">{label}</span>
@@ -598,33 +804,85 @@ export default function Admin({ go }) {
                   {loading ? <LoaderCircle className="admin-spin" size={16} /> : "Refresh"}
                 </button>
               </div>
+              <div className="admin-inquiry-filters">
+                <label className="admin-list-filter">
+                  <span>Message type</span>
+                  <select
+                    value={messageTypeFilter}
+                    onChange={(event) => setMessageTypeFilter(event.target.value)}
+                  >
+                    <option value="all">All types</option>
+                    {MESSAGE_TYPES.map((messageType) => (
+                      <option key={messageType.value} value={messageType.value}>
+                        {messageType.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="admin-list-filter">
+                  <span>Where it came from</span>
+                  <select
+                    value={messageSourceFilter}
+                    onChange={(event) => setMessageSourceFilter(event.target.value)}
+                  >
+                    <option value="all">All sources</option>
+                    {messageSources.map((source) => (
+                      <option key={source} value={source}>
+                        {source}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               {loading ? (
                 <p className="admin-empty">Loading messages…</p>
-              ) : records.messages.length ? (
-                <div className="admin-record-list">
-                  {records.messages.map((record) => (
-                    <article className="admin-record admin-message-card" key={record.id}>
-                      <div className="admin-record-heading">
-                        <div>
-                          <h3>{record.name}</h3>
-                          <p>{record.email || "No email provided"} · {new Date(record.created_at).toLocaleString()}</p>
-                        </div>
-                        <button
-                          className="admin-icon-button danger"
-                          type="button"
-                          onClick={() => deleteRecord("messages", record)}
-                          disabled={busy}
-                          aria-label={`Delete message from ${record.name}`}
+              ) : filteredMessages.length ? (
+                <div className="admin-message-table-wrap">
+                  <table className="admin-message-table">
+                    <thead>
+                      <tr>
+                        <th>Received</th>
+                        <th>Type</th>
+                        <th>From</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Favorite</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMessages.map((record) => (
+                        <tr
+                          key={record.id}
+                          tabIndex={0}
+                          aria-label={`Open message from ${record.name}`}
+                          onClick={() => openMessage(record)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              openMessage(record);
+                            }
+                          }}
                         >
-                          <X size={18} />
-                        </button>
-                      </div>
-                      <p className="admin-message-text">{record.message}</p>
-                    </article>
-                  ))}
+                          <td>{new Date(record.created_at).toLocaleString()}</td>
+                          <td>
+                            {MESSAGE_TYPES.find((item) => item.value === record.message_type)?.label ||
+                              record.message_type}
+                          </td>
+                          <td>{record.came_from}</td>
+                          <td>{record.name}</td>
+                          <td>{record.status}</td>
+                          <td>{record.favorite ? "Yes" : "No"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               ) : (
-                <p className="admin-empty">No contact messages yet.</p>
+                <p className="admin-empty">
+                  {records.messages.length
+                    ? "No messages match the selected filters."
+                    : "No contact messages yet."}
+                </p>
               )}
             </section>
           ) : activeSection === "about" ? (
@@ -673,17 +931,85 @@ export default function Admin({ go }) {
                   <Plus size={18} /> Add {activeSection === "skills" ? "skill" : activeSection === "projects" ? "project" : "record"}
                 </button>
               </div>
+              {["education", "projects", "skills"].includes(activeSection) && (
+                <div className="admin-list-controls">
+                  <label className="admin-list-search">
+                    <span>Search {activeSection}</span>
+                    <input
+                      type="search"
+                      value={listSearch}
+                      onChange={(event) => setListSearch(event.target.value)}
+                      placeholder={`Search ${activeSection}...`}
+                    />
+                  </label>
+                  {activeSection === "education" && (
+                    <label className="admin-list-filter">
+                      <span>Type</span>
+                      <select
+                        value={educationTypeFilter}
+                        onChange={(event) => setEducationTypeFilter(event.target.value)}
+                      >
+                        <option value="all">All types</option>
+                        <option value="degree">Degree</option>
+                        <option value="certificate">Certificate</option>
+                      </select>
+                    </label>
+                  )}
+                  {activeSection === "projects" && (
+                    <>
+                      <label className="admin-list-filter">
+                        <span>Project type</span>
+                        <select
+                          value={projectTypeFilter}
+                          onChange={(event) => setProjectTypeFilter(event.target.value)}
+                        >
+                          <option value="all">All project types</option>
+                          <option value="main">Main Project</option>
+                          <option value="side">Side Project</option>
+                        </select>
+                      </label>
+                      <label className="admin-list-filter">
+                        <span>Status</span>
+                        <select
+                          value={projectStatusFilter}
+                          onChange={(event) => setProjectStatusFilter(event.target.value)}
+                        >
+                          <option value="all">All statuses</option>
+                          <option value="complete">Complete</option>
+                          <option value="ongoing">Ongoing</option>
+                          <option value="pending">Pending</option>
+                        </select>
+                      </label>
+                    </>
+                  )}
+                  {activeSection === "skills" && (
+                    <label className="admin-list-filter">
+                      <span>Group</span>
+                      <select
+                        value={skillTypeFilter}
+                        onChange={(event) => setSkillTypeFilter(event.target.value)}
+                      >
+                        <option value="all">All groups</option>
+                        <option value="web_interface">Web interface</option>
+                        <option value="data">Data</option>
+                        <option value="access_integrity">Access integrity</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </label>
+                  )}
+                </div>
+              )}
               {loading ? (
                 <p className="admin-empty">Loading records…</p>
-              ) : currentRecords.length ? (
+              ) : filteredRecords.length ? (
                 <div className="admin-record-list">
-                  {currentRecords.map((record) => (
+                  {filteredRecords.map((record) => (
                     <article className="admin-record" key={record.id}>
                       <div>
                         <h3>{recordTitle(activeSection, record)}</h3>
                         <p>
                           {activeSection === "projects"
-                            ? `${record.type} project${record.kind ? ` · ${record.kind}` : ""}`
+                            ? `${record.type === "main" ? "Main" : "Side"} Project · ${record.status || "ongoing"}`
                             : activeSection === "education"
                               ? `${record.type} · ${record.organization || "No organization"}`
                               : record.type.replaceAll("_", " ")}
@@ -708,10 +1034,139 @@ export default function Admin({ go }) {
                 </div>
               ) : (
                 <p className="admin-empty">
-                  No records yet. Use the button above to add one.
+                  {currentRecords.length
+                    ? "No records match the current search and filters."
+                    : "No records yet. Use the button above to add one."}
                 </p>
               )}
             </section>
+          )}
+
+          {selectedMessage && (
+            <div
+              className="admin-editor-backdrop"
+              role="presentation"
+              onClick={() => setSelectedMessage(null)}
+            >
+              <section
+                className="admin-editor admin-inquiry-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="admin-inquiry-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <header className="admin-editor-header">
+                  <div>
+                    <p className="label mono">Inbox / Message #{selectedMessage.id}</p>
+                    <h2 id="admin-inquiry-title">{selectedMessage.name}</h2>
+                  </div>
+                  <button
+                    className="admin-icon-button"
+                    type="button"
+                    onClick={() => setSelectedMessage(null)}
+                    disabled={busy}
+                    aria-label="Close message details"
+                  >
+                    <X size={20} />
+                  </button>
+                </header>
+                <div className="admin-inquiry-body">
+                  {error && <p className="admin-alert admin-alert-error" role="alert">{error}</p>}
+                  {notice && <p className="admin-alert" role="status">{notice}</p>}
+                  <dl className="admin-inquiry-details">
+                    <div>
+                      <dt>Email</dt>
+                      <dd>
+                        {selectedMessage.email ? (
+                          <a href={`mailto:${selectedMessage.email}`}>{selectedMessage.email}</a>
+                        ) : (
+                          "Not provided"
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Type of message</dt>
+                      <dd>
+                        {MESSAGE_TYPES.find((item) => item.value === selectedMessage.message_type)?.label ||
+                          selectedMessage.message_type}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Came from</dt>
+                      <dd>{selectedMessage.came_from}</dd>
+                    </div>
+                    <div>
+                      <dt>Created at</dt>
+                      <dd>{new Date(selectedMessage.created_at).toLocaleString()}</dd>
+                    </div>
+                    <div className="admin-inquiry-message">
+                      <dt>Message</dt>
+                      <dd>{selectedMessage.message}</dd>
+                    </div>
+                  </dl>
+                  <div className="admin-inquiry-edit">
+                    <label className="admin-field">
+                      Status
+                      <select
+                        value={messageDraft.status}
+                        onChange={(event) =>
+                          setMessageDraft((current) => ({ ...current, status: event.target.value }))
+                        }
+                      >
+                        {MESSAGE_STATUSES.map((status) => (
+                          <option key={status.value} value={status.value}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="admin-inquiry-favorite">
+                      <input
+                        type="checkbox"
+                        checked={messageDraft.favorite}
+                        onChange={(event) =>
+                          setMessageDraft((current) => ({
+                            ...current,
+                            favorite: event.target.checked,
+                          }))
+                        }
+                      />
+                      Favorite
+                    </label>
+                  </div>
+                </div>
+                <footer className="admin-editor-footer">
+                  <button
+                    className="btn-ghost"
+                    type="button"
+                    onClick={async () => {
+                      if (await deleteRecord("messages", selectedMessage)) {
+                        setSelectedMessage(null);
+                      }
+                    }}
+                    disabled={busy}
+                  >
+                    Delete message
+                  </button>
+                  <button
+                    className="btn-ghost"
+                    type="button"
+                    onClick={() => setSelectedMessage(null)}
+                    disabled={busy}
+                  >
+                    Close
+                  </button>
+                  <button
+                    className="btn-pill"
+                    type="button"
+                    onClick={saveMessageDetails}
+                    disabled={busy}
+                  >
+                    {busy ? "Saving…" : "Save changes"}
+                  </button>
+                </footer>
+              </section>
+            </div>
           )}
 
           {editing && editing.section !== "about" && (

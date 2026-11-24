@@ -25,7 +25,7 @@ const TITLES = {
 // The URL hash is the single source of truth: #/home, #/about, ...
 // so back/forward and deep links work without a router library.
 const readHash = () => {
-  const id = window.location.hash.replace(/^#\/?/, "");
+  const id = window.location.hash.replace(/^#\/?/, "").split("?")[0];
   return id in VIEWS ? id : "home";
 };
 

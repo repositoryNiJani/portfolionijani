@@ -6,9 +6,9 @@ export async function getPortfolio() {
 
   const [about, education, projects, skills] = await Promise.all([
     supabase.from("about").select("*").limit(1).maybeSingle(),
-    supabase.from("education").select("*").order("sort_order"),
-    supabase.from("projects").select("*").order("sort_order"),
-    supabase.from("technical_skills").select("*").order("sort_order"),
+    supabase.from("education").select("*").order("created_at").order("id"),
+    supabase.from("projects").select("*").order("created_at").order("id"),
+    supabase.from("technical_skills").select("*").order("created_at").order("id"),
   ]);
 
   for (const r of [about, education, projects, skills]) {
@@ -31,10 +31,16 @@ export async function getPortfolio() {
 }
 
 // Saves a contact-form message (visitors can insert but never read).
-export async function sendMessage({ name, email, message }) {
+export async function sendMessage({ name, email, type, cameFrom, message }) {
   if (!supabase) throw new Error("aray boss may problema tayo");
   const { error } = await supabase
-    .from("contact_messages")
-    .insert({ name: name.trim(), email: email?.trim() || null, message: message.trim() });
+    .from("contact_inquiries")
+    .insert({
+      name: name.trim(),
+      email: email?.trim() || null,
+      message_type: type,
+      came_from: cameFrom?.trim() || "Portfolio - Contact Me",
+      message: message.trim(),
+    });
   if (error) throw error;
 }

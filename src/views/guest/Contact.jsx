@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Sprite } from "../../components/Icons.jsx";
 import { PROFILE, SOCIALS } from "../../data/profile.js";
+import { MESSAGE_TYPES } from "../../data/messages.js";
 import { sendMessage } from "../../lib/api.js";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -135,25 +136,38 @@ function CopyButton({ text }) {
   );
 }
 
+function readCameFrom() {
+  const query = window.location.hash.split("?")[1] || "";
+  return new URLSearchParams(query).get("came_from")?.trim() || "Portfolio - Contact Me";
+}
+
 export default function Contact() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [type, setType] = useState("");
   const [message, setMessage] = useState("");
   const [note, setNote] = useState({ text: "", error: false });
   const [sending, setSending] = useState(false);
+  const [cameFrom, setCameFrom] = useState(() => readCameFrom());
+
+  useEffect(() => {
+    const updateSource = () => setCameFrom(readCameFrom());
+    window.addEventListener("hashchange", updateSource);
+    return () => window.removeEventListener("hashchange", updateSource);
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
     const n = name.trim();
     const address = email.trim();
     const m = message.trim();
-    if (!n || !m) {
-      setNote({ text: "Please enter your name and a message.", error: true });
+    if (!n || !type || !m) {
+      setNote({ text: "Please enter your name, choose a message type, and add a message.", error: true });
       return;
     }
-    if (n.length > 100 || address.length > 200 || m.length > 5000) {
+    if (n.length > 100 || address.length > 200 || m.length > 5000 || cameFrom.length > 200) {
       setNote({
-        text: "Name, email, or message is longer than the allowed limit.",
+        text: "Name, email, message, or source is longer than the allowed limit.",
         error: true,
       });
       return;
@@ -162,11 +176,12 @@ export default function Contact() {
     setSending(true);
     setNote({ text: "", error: false });
     try {
-      await sendMessage({ name: n, email: address, message: m });
+      await sendMessage({ name: n, email: address, type, cameFrom, message: m });
       setName("");
       setEmail("");
+      setType("");
       setMessage("");
-      setNote({ text: "Your message has been sent. Thank you!", error: false });
+      setNote({ text: "Your message has been saved. Thank you!", error: false });
     } catch (sendError) {
       setNote({
         text: sendError.message || "Could not send your message. Please try again.",
@@ -265,6 +280,25 @@ export default function Contact() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </label>
+            <label>
+              Message type
+              <select
+                name="message_type"
+                required
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+              >
+                <option value="">Choose a type</option>
+                {MESSAGE_TYPES.map((messageType) => (
+                  <option key={messageType.value} value={messageType.value}>
+                    {messageType.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {cameFrom !== "Portfolio - Contact Me" && (
+              <p className="contact-source-note">Regarding: {cameFrom}</p>
+            )}
             <label className="grow">
               Your message
               <textarea
@@ -287,7 +321,7 @@ export default function Contact() {
               role="status"
               aria-live="polite"
             >
-              {note.text || "Your message goes straight to my inbox."}
+              {note.text || "Your message will be saved to my portfolio inbox."}
             </p>
           </form>
         </section>

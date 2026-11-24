@@ -48,22 +48,20 @@ create table public.education (
   description  text,
   year         text,                 -- text so "2023 - Present" works
   image        text,
-  sort_order   integer not null default 0,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
 );
 
 create table public.projects (
   id          bigint generated always as identity primary key,
-  slug        text not null unique,  -- e.g. "step", used in URLs
   title       text not null,
   short_name  text,
   type        text not null check (type in ('main', 'side')),
-  kind        text,                  -- "School project", "Client project"...
   role        text,
   client      text,
   start_date  date,
   end_date    date,                  -- NULL = still ongoing
+  status      text not null default 'ongoing' check (status in ('complete', 'ongoing', 'pending')),
   summary     text,
   description text,
   highlights  text[] not null default '{}',   -- the bullet points
@@ -72,7 +70,6 @@ create table public.projects (
   images      jsonb not null default '[]',    -- [{"src": "...", "alt": "..."}]
   live_url    text,
   repo_url    text,
-  sort_order  integer not null default 0,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
@@ -82,7 +79,6 @@ create table public.technical_skills (
   type       text not null check (type in ('web_interface', 'data', 'access_integrity', 'other')),
   name       text not null,
   image      text,
-  sort_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -99,8 +95,7 @@ create table public.contact_messages (
   constraint contact_message_len check (char_length(message) between 1 and 5000)
 );
 
-create index projects_type_sort_idx on public.projects (type, sort_order);
-create index skills_type_sort_idx   on public.technical_skills (type, sort_order);
+create index projects_type_created_idx on public.projects (type, created_at desc);
 
 create trigger about_updated    before update on public.about            for each row execute function public.set_updated_at();
 create trigger education_updated before update on public.education       for each row execute function public.set_updated_at();
