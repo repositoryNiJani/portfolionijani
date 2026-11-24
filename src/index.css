@@ -1431,6 +1431,10 @@ img {
   gap: 22px;
   padding: 32px 34px 30px;
 }
+.login-modal-body > .btn-pill {
+  justify-content: center;
+  padding-left: 6px;
+}
 .login-intro {
   margin: 0;
   color: var(--muted);
@@ -2510,6 +2514,9 @@ img {
 }
 .form .grow {
   flex: 1;
+}
+.form > .btn-pill {
+  justify-content: space-between;
 }
 .form input,
 .form textarea,
