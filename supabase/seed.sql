@@ -76,8 +76,11 @@ insert into public.technical_skills (type, name, image) values
   ('other', 'Git',                  '/git.png'),
   ('other', 'GitHub',               '/github.png'),
   ('other', 'Draw.io',              '/draw.png'),
-  ('other', 'Figma',                '/figma.png'),
-  ('other', 'Word',                 '/word.png'),
-  ('other', 'Excel',                '/excel.png'),
-  ('other', 'PowerPoint',           '/ppt.png'),
-  ('other', 'AI coding assistants', null);
+  ('other', 'AI coding assistants', null),
+  ('design_media', 'Figma',         '/figma.png'),
+  ('design_media', 'Canva',         null),
+  ('design_media', 'CapCut',        null),
+  ('design_media', 'Photoshop',     null),
+  ('documents_office', 'Word',      '/word.png'),
+  ('documents_office', 'Excel',     '/excel.png'),
+  ('documents_office', 'PowerPoint','/ppt.png');

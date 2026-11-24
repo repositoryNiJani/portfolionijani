@@ -68,6 +68,7 @@ function DocumentationCarousel({ images, name, initialIndex }) {
         className="preview-modal-image documentation-carousel-image"
         src={activeImage.src}
         alt={activeImage.alt ?? `${name} screenshot`}
+        decoding="async"
       />
       {images.length > 1 && (
         <div className="documentation-carousel-controls">
@@ -132,7 +133,12 @@ function Gallery({ images, name, onOpen }) {
         onClick={() => onOpen(current)}
         aria-label={`Open ${name} preview image`}
       >
-        <img src={current.src} alt={current.alt ?? `${name} screenshot`} />
+        <img
+          src={current.src}
+          alt={current.alt ?? `${name} screenshot`}
+          loading="lazy"
+          decoding="async"
+        />
       </button>
       {images.length > 1 && (
         <div className="shot-dots" role="group" aria-label="Choose a screenshot">

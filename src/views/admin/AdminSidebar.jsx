@@ -15,7 +15,7 @@ export default function AdminSidebar({
   return (
     <aside className="admin-sidebar">
       <a className="admin-brand" href="#/admin" aria-label="Admin dashboard">
-        <img src="/logo.png" alt="" width="34" height="34" />
+        <img src="/logo.webp" alt="" width="34" height="34" />
         <span>
           <strong>JANI</strong>
           <small>Admin console</small>
@@ -77,7 +77,7 @@ export default function AdminSidebar({
           </button>
         </div>
         <div className="profile admin-profile">
-          <img src="/jani.png" alt="" width="40" height="40" />
+          <img src="/jani.webp" alt="" width="40" height="40" />
           <span className="profile-copy">
             <strong>{PROFILE.shortName}</strong>
             <span className="status">

@@ -19,7 +19,7 @@ export default function Pond() {
         />
       </div>
       <div className="bgf" aria-hidden="true">
-        <img src="/logo.png" alt="" />
+        <img src="/logo.webp" alt="" />
       </div>
     </>
   );

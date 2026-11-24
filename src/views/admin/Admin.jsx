@@ -90,7 +90,19 @@ const FIELDS = {
       name: "type",
       label: "Group",
       kind: "select",
-      options: ["web_interface", "data", "access_integrity", "other"],
+      options: [
+        "web_interface",
+        "data",
+        "access_integrity",
+        "other",
+        "design_media",
+        "documents_office",
+      ],
+      labels: {
+        other: "Planning & delivery",
+        design_media: "Design & media",
+        documents_office: "Documents & office",
+      },
       required: true,
     },
     { name: "name", label: "Skill", required: true },
@@ -993,7 +1005,9 @@ export default function Admin({ go }) {
                         <option value="web_interface">Web interface</option>
                         <option value="data">Data</option>
                         <option value="access_integrity">Access integrity</option>
-                        <option value="other">Other</option>
+                        <option value="other">Planning &amp; delivery</option>
+                        <option value="design_media">Design &amp; media</option>
+                        <option value="documents_office">Documents &amp; office</option>
                       </select>
                     </label>
                   )}

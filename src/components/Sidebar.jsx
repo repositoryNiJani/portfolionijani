@@ -23,7 +23,7 @@ export default function Sidebar({ view, isAdminSignedIn, koiVisible, onToggleKoi
     <>
       <nav className="side" aria-label="Main">
         <a className="brand" href="#/home" aria-label={`${PROFILE.name}, home`}>
-          <img src="/logo.png" alt="" width="34" height="34" />
+          <img src="/logo.webp" alt="" width="34" height="34" />
           <span>{PROFILE.brand}</span>
         </a>
 
@@ -113,7 +113,7 @@ export default function Sidebar({ view, isAdminSignedIn, koiVisible, onToggleKoi
               }
             }}
           >
-            <img src="/jani.png" alt="" width="40" height="40" />
+            <img src="/jani.webp" alt="" width="40" height="40" />
             <span className="profile-copy">
               <strong>{PROFILE.shortName}</strong>
               <span className="status">

@@ -26,6 +26,8 @@ const SKILL_TYPES = {
   "02": "data",
   "03": "access_integrity",
   "04": "other",
+  "05": "design_media",
+  "06": "documents_office",
 };
 
 function getVerificationUrl(value) {
@@ -85,7 +87,7 @@ export default function About({ go, portfolio }) {
 
       <section id="overview" className="ab-top">
         <article className="photo-card">
-          <img src={about.image || "/404.svg"} alt={PROFILE.name} />
+          <img src={about.image || "/404.svg"} alt={PROFILE.name} decoding="async" />
           <div className="photo-cap">
             <h2>The Developer</h2>
           </div>
@@ -200,6 +202,8 @@ export default function About({ go, portfolio }) {
                         src={skill.image || "/404.svg"}
                         alt=""
                         className="chip-ic"
+                        loading="lazy"
+                        decoding="async"
                       />
                       {skill.name}
                     </li>
@@ -241,6 +245,8 @@ export default function About({ go, portfolio }) {
                   <img
                     src={item.image || "/404.svg"}
                     alt={`${item.title} preview`}
+                    loading="lazy"
+                    decoding="async"
                   />
                 </button>
               </article>
