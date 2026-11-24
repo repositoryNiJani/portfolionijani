@@ -1593,7 +1593,8 @@ img {
   border-top: 1px solid var(--line);
 }
 .admin-sidebar-footer a,
-.admin-sidebar-footer button:not(.theme-switch) {
+.admin-sidebar-footer button:not(.theme-switch),
+.side-footer > a {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1609,7 +1610,8 @@ img {
   text-decoration: none;
 }
 .admin-sidebar-footer a:hover,
-.admin-sidebar-footer button:not(.theme-switch):hover {
+.admin-sidebar-footer button:not(.theme-switch):hover,
+.side-footer > a:hover {
   background: var(--accent-soft);
   color: var(--accent);
 }

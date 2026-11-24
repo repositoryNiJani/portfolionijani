@@ -11,6 +11,7 @@ import Resume from "./views/guest/Resume.jsx";
 import Admin from "./views/admin/Admin.jsx";
 import { PROFILE } from "./data/profile.js";
 import { getPortfolio } from "./lib/api.js";
+import { supabase } from "./lib/supabase.js";
 
 const VIEWS = { home: Home, about: About, work: Work, contact: Contact, resume: Resume, admin: Admin };
 const TITLES = {
@@ -34,6 +35,7 @@ export default function App() {
   const contentRef = useRef(null);
   const firstRender = useRef(true);
   const [view, setView] = useState(readHash);
+  const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
   const isAdminRoute = view === "admin";
   const needsPortfolio = !isAdminRoute && (view === "about" || view === "work");
   const [portfolio, setPortfolio] = useState(null);
@@ -47,6 +49,73 @@ export default function App() {
       return true;
     }
   });
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+
+    let active = true;
+    let authEventVersion = 0;
+    let verificationId = 0;
+    const verifyAdminSession = async (session) => {
+      const currentVerification = ++verificationId;
+      if (!session) {
+        setIsAdminSignedIn(false);
+        return;
+      }
+
+      try {
+        const { data: isAdmin, error } = await supabase.rpc("is_admin");
+        if (error) throw error;
+        if (active && currentVerification === verificationId) {
+          setIsAdminSignedIn(isAdmin === true);
+        }
+      } catch (error) {
+        if (active && currentVerification === verificationId) {
+          setIsAdminSignedIn(false);
+          console.error("Could not verify the current admin session.", error);
+        }
+      }
+    };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      authEventVersion += 1;
+      if (!session) {
+        void verifyAdminSession(null);
+        return;
+      }
+      window.setTimeout(() => {
+        if (active) void verifyAdminSession(session);
+      }, 0);
+    });
+    const initialAuthEventVersion = authEventVersion;
+
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          console.error("Could not check the current admin session.", error);
+          return;
+        }
+        if (authEventVersion === initialAuthEventVersion) {
+          void verifyAdminSession(data.session);
+        }
+      })
+      .catch((error) => {
+        if (active && authEventVersion === initialAuthEventVersion) {
+          setIsAdminSignedIn(false);
+          console.error("Could not check the current admin session.", error);
+        }
+      });
+
+    return () => {
+      active = false;
+      verificationId += 1;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // The koi swims over the whole window and follows the pointer.
   useEffect(() => {
@@ -133,6 +202,7 @@ export default function App() {
       {!isAdminRoute && (
         <Sidebar
           view={view}
+          isAdminSignedIn={isAdminSignedIn}
           koiVisible={koiVisible}
           onToggleKoi={() => setKoiVisible((visible) => !visible)}
         />

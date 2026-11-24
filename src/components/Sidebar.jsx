@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { FileText, Fish, Folder, Home, Mail, Moon, Sun, UserRound } from "lucide-react";
+import { ArrowLeft, FileText, Fish, Folder, Home, Mail, Moon, Sun, UserRound } from "lucide-react";
 import { PROFILE } from "../data/profile.js";
 import useTheme from "../lib/useTheme.js";
 import LoginModal from "./LoginModal.jsx";
@@ -13,7 +13,7 @@ const NAV = [
 ];
 
 // Docked to the left edge, full height. Becomes a bottom tab bar on phones.
-export default function Sidebar({ view, koiVisible, onToggleKoi }) {
+export default function Sidebar({ view, isAdminSignedIn, koiVisible, onToggleKoi }) {
   const { theme, toggleTheme } = useTheme();
   const [loginOpen, setLoginOpen] = useState(false);
   const profileClicks = useRef(0);
@@ -40,6 +40,14 @@ export default function Sidebar({ view, koiVisible, onToggleKoi }) {
               </a>
             </li>
           ))}
+          {isAdminSignedIn && (
+            <li className="mobile-only">
+              <a className="side-link" href="#/admin" aria-label="Back to admin">
+                <ArrowLeft size={17} />
+                <span>Back to admin</span>
+              </a>
+            </li>
+          )}
           <li className="mobile-only">
             <button
               type="button"
@@ -55,6 +63,12 @@ export default function Sidebar({ view, koiVisible, onToggleKoi }) {
         </ul>
 
         <div className="side-footer">
+          {isAdminSignedIn && (
+            <a className="side-link" href="#/admin" aria-label="Back to admin">
+              <ArrowLeft size={17} />
+              <span>Back to admin</span>
+            </a>
+          )}
           <div className="theme-row">
             <span className="theme-row-label">
               {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
