@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { imageUrl, supabase } from "../../lib/supabase.js";
 import { MESSAGE_STATUSES, MESSAGE_TYPES } from "../../data/messages.js";
+import AvailabilityCalendar from "./AvailabilityCalendar.jsx";
 import AdminSidebar from "./AdminSidebar.jsx";
 
 const SECTIONS = [
@@ -805,6 +806,8 @@ export default function Admin({ go }) {
                 records this account can edit.
               </p>
             </section>
+          ) : activeSection === "calendar" ? (
+            <AvailabilityCalendar />
           ) : activeSection === "messages" ? (
             <section>
               <div className="admin-section-heading">

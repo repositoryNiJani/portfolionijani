@@ -1,4 +1,4 @@
-import { ArrowLeft, LayoutDashboard, LogOut, Moon, Sun } from "lucide-react";
+import { ArrowLeft, CalendarDays, LayoutDashboard, LogOut, Moon, Sun } from "lucide-react";
 import { PROFILE } from "../../data/profile.js";
 import useTheme from "../../lib/useTheme.js";
 
@@ -31,6 +31,14 @@ export default function AdminSidebar({
         >
           <LayoutDashboard size={18} />
           Overview
+        </button>
+        <button
+          type="button"
+          className={activeSection === "calendar" ? "active" : ""}
+          onClick={() => onSelect("calendar")}
+        >
+          <CalendarDays size={18} />
+          Calendar
         </button>
         {sections.map(({ id, label, Icon }) => (
           <button

@@ -1,14 +1,52 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ArrowRight, X } from "lucide-react";
 import { Sprite } from "../../components/Icons.jsx";
 import { PROFILE, SOCIALS } from "../../data/profile.js";
 import { MESSAGE_TYPES } from "../../data/messages.js";
 import { sendMessage } from "../../lib/api.js";
+import { supabase } from "../../lib/supabase.js";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+function formatScheduleTime(value) {
+  const [hours, minutes] = value.slice(0, 5).split(":").map(Number);
+  return new Date(2000, 0, 1, hours, minutes).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 function ScheduleCalendar() {
   const [monthOffset, setMonthOffset] = useState(0);
+  const [availabilityEntries, setAvailabilityEntries] = useState([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(true);
+  const [availabilityError, setAvailabilityError] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    async function loadAvailability() {
+      try {
+        if (!supabase) throw new Error("Availability calendar is unavailable.");
+        const { data, error } = await supabase
+          .from("availability_events")
+          .select("id, availability_date, activity, start_time, end_time")
+          .order("availability_date")
+          .order("start_time");
+        if (error) throw error;
+        if (active) setAvailabilityEntries(data || []);
+      } catch (error) {
+        if (active) setAvailabilityError(error.message || "Could not load availability.");
+      } finally {
+        if (active) setAvailabilityLoading(false);
+      }
+    }
+    loadAvailability();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const view = useMemo(() => {
     const today = new Date();
@@ -32,6 +70,27 @@ function ScheduleCalendar() {
 
     return { year, month, label, cells, today: today.getDate(), isCurrentMonth };
   }, [monthOffset]);
+
+  const entriesByDate = useMemo(() => {
+    const grouped = new Map();
+    for (const entry of availabilityEntries) {
+      const current = grouped.get(entry.availability_date) || [];
+      current.push(entry);
+      grouped.set(entry.availability_date, current);
+    }
+    return grouped;
+  }, [availabilityEntries]);
+
+  useEffect(() => {
+    if (!selectedDate) return undefined;
+    function closeOnEscape(event) {
+      if (event.key === "Escape") setSelectedDate(null);
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [selectedDate]);
+
+  const selectedEntries = selectedDate ? entriesByDate.get(selectedDate) || [] : [];
 
   return (
     <div className="schedule-calendar">
@@ -78,18 +137,104 @@ function ScheduleCalendar() {
           }
 
           const isToday = view.isCurrentMonth && day === view.today;
+          const dateKey = `${view.year}-${String(view.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const dateEntries = entriesByDate.get(dateKey) || [];
           return (
             <div
-              key={`${view.year}-${view.month}-${day}`}
-              className={`heatmap-day${isToday ? " today" : ""}`}
+              key={dateKey}
+              className={`heatmap-day${isToday ? " today" : ""}${dateEntries.length ? " has-schedule" : ""}`}
               role="gridcell"
               aria-current={isToday ? "date" : undefined}
+              aria-label={`${new Date(`${dateKey}T00:00:00`).toLocaleDateString()}, ${dateEntries.length} availability entries`}
+              tabIndex={0}
+              onClick={() => setSelectedDate(dateKey)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setSelectedDate(dateKey);
+                }
+              }}
             >
               <span className="heatmap-day-num">{day}</span>
+              {dateEntries.map((entry) => (
+                <span className="schedule-entry" key={entry.id}>
+                  <strong>
+                    {formatScheduleTime(entry.start_time)}
+                    {" – "}
+                    {formatScheduleTime(entry.end_time)}
+                  </strong>
+                  <span>{entry.activity}</span>
+                </span>
+              ))}
             </div>
           );
         })}
       </div>
+      {availabilityLoading && <p className="schedule-availability-status">Loading availability…</p>}
+      {availabilityError && (
+        <p className="schedule-availability-status schedule-availability-error" role="status">
+          Availability could not be loaded: {availabilityError}
+        </p>
+      )}
+      {selectedDate &&
+        createPortal(
+          <div
+            className="preview-modal schedule-availability-backdrop"
+            role="presentation"
+            onClick={() => setSelectedDate(null)}
+          >
+            <section
+              className="preview-modal-inner schedule-availability-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="schedule-availability-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <header className="preview-modal-header">
+                <h2 id="schedule-availability-title">
+                  {new Date(`${selectedDate}T00:00:00`).toLocaleDateString([], {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </h2>
+                <button
+                  type="button"
+                  className="preview-modal-close schedule-modal-close"
+                  aria-label="Close availability details"
+                  autoFocus
+                  onClick={() => setSelectedDate(null)}
+                >
+                  <X size={20} />
+                </button>
+              </header>
+              <div className="preview-modal-body schedule-availability-body">
+                {availabilityLoading ? (
+                  <p className="schedule-no-availability">Loading availability…</p>
+                ) : availabilityError ? (
+                  <p className="schedule-no-availability" role="alert">
+                    Availability details are unavailable right now.
+                  </p>
+                ) : selectedEntries.length ? (
+                  <div className="schedule-availability-list">
+                    {selectedEntries.map((entry) => (
+                      <article className="schedule-availability-item" key={entry.id}>
+                        <p className="schedule-availability-time">
+                          {formatScheduleTime(entry.start_time)} – {formatScheduleTime(entry.end_time)}
+                        </p>
+                        <h3>{entry.activity}</h3>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="schedule-no-availability">No availability scheduled for this date.</p>
+                )}
+              </div>
+            </section>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
