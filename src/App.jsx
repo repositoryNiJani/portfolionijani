@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { initKoiPond } from "./koiPond.js";
 import Pond from "./components/Pond.jsx";
 import Sidebar from "./components/Sidebar.jsx";
-import Home from "./views/guest/Home.jsx";
-import About from "./views/guest/About.jsx";
-import Work from "./views/guest/Work.jsx";
-import Contact from "./views/guest/Contact.jsx";
-import Resume from "./views/guest/Resume.jsx";
-import Admin from "./views/admin/Admin.jsx";
 import { PROFILE } from "./data/profile.js";
-import { getPortfolio } from "./lib/api.js";
+import { getCachedPortfolio, getPortfolio } from "./lib/api.js";
 import { supabase } from "./lib/supabase.js";
+
+const Home = lazy(() => import("./views/guest/Home.jsx"));
+const About = lazy(() => import("./views/guest/About.jsx"));
+const Work = lazy(() => import("./views/guest/Work.jsx"));
+const Contact = lazy(() => import("./views/guest/Contact.jsx"));
+const Resume = lazy(() => import("./views/guest/Resume.jsx"));
+const Admin = lazy(() => import("./views/admin/Admin.jsx"));
 
 const VIEWS = { home: Home, about: About, work: Work, contact: Contact, resume: Resume, admin: Admin };
 const TITLES = {
@@ -39,6 +40,7 @@ export default function App() {
   const isAdminRoute = view === "admin";
   const needsPortfolio = !isAdminRoute && (view === "about" || view === "work");
   const [portfolio, setPortfolio] = useState(null);
+  const [portfolioView, setPortfolioView] = useState(null);
   const [portfolioLoading, setPortfolioLoading] = useState(false);
   const [portfolioError, setPortfolioError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
@@ -125,22 +127,35 @@ export default function App() {
 
   useEffect(() => {
     if (!needsPortfolio) {
-      setPortfolio(null);
       setPortfolioLoading(false);
       setPortfolioError("");
       return undefined;
     }
 
     let active = true;
-    setPortfolioLoading(true);
+    const cached = getCachedPortfolio(view);
+    if (cached) {
+      setPortfolio(cached);
+      setPortfolioView(view);
+      setPortfolioLoading(false);
+    } else {
+      setPortfolioLoading(true);
+    }
     setPortfolioError("");
-    getPortfolio()
+    getPortfolio(view)
       .then((data) => {
-        if (active) setPortfolio(data);
+        if (active) {
+          setPortfolio(data);
+          setPortfolioView(view);
+        }
       })
       .catch((error) => {
         if (active) {
-          setPortfolioError(error.message || "Could not load portfolio content.");
+          if (cached) {
+            console.error("Could not refresh portfolio content.", error);
+          } else {
+            setPortfolioError(error.message || "Could not load portfolio content.");
+          }
         }
       })
       .finally(() => {
@@ -150,7 +165,7 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, [needsPortfolio, reloadToken]);
+  }, [needsPortfolio, reloadToken, view]);
 
   useEffect(() => {
     if (isAdminRoute) return;
@@ -211,29 +226,39 @@ export default function App() {
         <div className="content-inner">
           {!isAdminRoute && <p className="crumb mono">jani.portfolio / 2026</p>}
           <main className="view" key={view}>
-            {needsPortfolio ? (
-              portfolioLoading || (!portfolio && !portfolioError) ? (
+            <Suspense
+              fallback={
                 <section className="glass block" role="status">
-                  Loading portfolio content…
+                  Loading view…
                 </section>
-              ) : portfolioError ? (
-                <section className="glass block" role="alert">
-                  <h1 className="view-title">Portfolio unavailable</h1>
-                  <p className="sub">{portfolioError}</p>
-                  <button
-                    type="button"
-                    className="btn-pill"
-                    onClick={() => setReloadToken((token) => token + 1)}
-                  >
-                    Try again
-                  </button>
-                </section>
+              }
+            >
+              {needsPortfolio ? (
+                portfolioLoading ||
+                (!portfolio && !portfolioError) ||
+                (portfolio && portfolioView !== view && !portfolioError) ? (
+                  <section className="glass block" role="status">
+                    Loading portfolio content…
+                  </section>
+                ) : portfolioError ? (
+                  <section className="glass block" role="alert">
+                    <h1 className="view-title">Portfolio unavailable</h1>
+                    <p className="sub">{portfolioError}</p>
+                    <button
+                      type="button"
+                      className="btn-pill"
+                      onClick={() => setReloadToken((token) => token + 1)}
+                    >
+                      Try again
+                    </button>
+                  </section>
+                ) : (
+                  <View go={go} portfolio={portfolio} />
+                )
               ) : (
-                <View go={go} portfolio={portfolio} />
-              )
-            ) : (
-              <View go={go} />
-            )}
+                <View go={go} />
+              )}
+            </Suspense>
           </main>
         </div>
       </div>
